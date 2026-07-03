@@ -2,7 +2,6 @@ package com.baddary.salesAPI.controller;
 
 import com.baddary.salesAPI.dto.OrderDTO;
 import com.baddary.salesAPI.enums.OrderType;
-import com.baddary.salesAPI.enums.PaymentType;
 import com.baddary.salesAPI.service.OrderService;
 import jakarta.validation.Valid;
 
