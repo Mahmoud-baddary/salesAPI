@@ -5,6 +5,9 @@ import com.baddary.salesAPI.enums.OrderType;
 import com.baddary.salesAPI.enums.PaymentType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -18,9 +21,9 @@ public class OrderDTO {
     private LocalTime time;
     @NotNull(message = "order type is required")
     private OrderType orderType;
-    @NotNull(message = "payment type is required")
-    private PaymentType paymentType;
-    private double discount;
+    @NotNull(message = "paid money is required")
+    private BigDecimal paidMoney;
+    private BigDecimal discount = BigDecimal.ZERO;
     @NotNull(message = "Customer id is required")
     private Long customerId;
     @NotNull(message = "User id is required")
@@ -70,20 +73,20 @@ public class OrderDTO {
         this.orderType = orderType;
     }
 
-    public PaymentType getPaymentType() {
-        return paymentType;
+    public BigDecimal getPaidMoney() {
+        return paidMoney;
     }
 
-    public void setPaymentType(PaymentType paymentType) {
-        this.paymentType = paymentType;
+    public void setPaymentType(BigDecimal paidMoney) {
+        this.paidMoney = paidMoney;
     }
 
-    public double getDiscount() {
+    public BigDecimal getDiscount() {
         return discount;
     }
 
-    public void setDiscount(double discount) {
-        this.discount = discount;
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount != null ? discount : BigDecimal.ZERO;
     }
 
     public Long getCustomerId() {
@@ -116,5 +119,20 @@ public class OrderDTO {
     }
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+    // public double getTotalPrice() {
+    //     return orderProductDTOSet.stream()
+    //             .mapToDouble(item -> (item.getQuantity() * item.getPrice()) * (1 - item.getDiscount() / 100.0))
+    //             .sum() * (1 - discount / 100.0);
+    // }
+    public BigDecimal getTotalPrice(){
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        orderProductDTOSet.forEach(item->{
+            BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
+            BigDecimal price = item.getPrice();
+            BigDecimal itemDiscount = item.getDiscount();
+            totalPrice.add((quantity.multiply(price).multiply(BigDecimal.ONE.subtract(itemDiscount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))));
+        });
+        return totalPrice.multiply(BigDecimal.ONE.subtract(this.discount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP))).setScale(2, RoundingMode.HALF_UP);
     }
 }

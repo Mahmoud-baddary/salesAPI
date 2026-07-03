@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class StockDTO {
@@ -18,7 +19,7 @@ public class StockDTO {
     @NotBlank(message = "batch is required")
     private String batch;
     @Positive(message = "priceSU must be greater than zero")
-    private double priceSU;
+    private BigDecimal priceSU;
 
     public Long getId() {
         return id;
@@ -60,11 +61,11 @@ public class StockDTO {
         this.batch = batch;
     }
 
-    public double getPriceSU() {
+    public BigDecimal getPriceSU() {
         return priceSU;
     }
 
-    public void setPriceSU(double priceSU) {
+    public void setPriceSU(BigDecimal priceSU) {
         this.priceSU = priceSU;
     }
 }

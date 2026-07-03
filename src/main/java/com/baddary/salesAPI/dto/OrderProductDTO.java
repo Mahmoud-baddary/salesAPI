@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class OrderProductDTO {
@@ -17,8 +18,8 @@ public class OrderProductDTO {
     @Positive(message = "quantity must be greater than zero")
     private double quantity;
     @Positive(message = "price must be positive number")
-    private double price;
-    private double discount;
+    private BigDecimal price;
+    private BigDecimal discount = BigDecimal.ZERO;
     @NotNull(message = "expire is required")
     private LocalDate expireDate;
     private Long orderId;
@@ -73,20 +74,20 @@ public class OrderProductDTO {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
-    public double getDiscount() {
+    public BigDecimal getDiscount() {
         return discount;
     }
 
-    public void setDiscount(double discount) {
-        this.discount = discount;
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount != null ? discount : BigDecimal.ZERO;
     }
 
     public LocalDate getExpireDate() {

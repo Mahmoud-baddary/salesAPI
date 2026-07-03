@@ -10,6 +10,7 @@ import com.baddary.salesAPI.repository.StockRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public class StockService {
         this.productRepository = productRepository;
     }
 
-    public void increaseStock(Long productId, LocalDate expire, String batch, double quantitySU, double priceSU)
+    public void increaseStock(Long productId, LocalDate expire, String batch, double quantitySU, BigDecimal priceSU)
     {
         Product product = productRepository.findById(productId).orElseThrow();
         Stock stock = stockRepository.findByProductIdAndExpire(productId, expire)

@@ -1,8 +1,9 @@
 package com.baddary.salesAPI.entity;
 
-
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 @Entity
@@ -23,18 +24,23 @@ public class OrderProduct {
     private double quantity;
     @Column(nullable = false)
     private double quantitySU;
-    @Column(nullable = false)
-    private double price;
-    private double discount;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discount = BigDecimal.ZERO;
+
     private String note;
     private LocalDate expireDate;
-    private double priceSU;
 
-    public OrderProduct(){
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal priceSU;
+
+    public OrderProduct() {
 
     }
 
-    public double getPriceSU() {
+    public BigDecimal getPriceSU() {
         return priceSU;
     }
 
@@ -94,25 +100,24 @@ public class OrderProduct {
         this.quantitySU = calculateQuantitySU(this.quantity);
     }
 
-    public void setQuantity(double quantity)
-    {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setPrice(BigDecimal price) {
+        this.price = price ;
     }
 
-    public double getDiscount() {
+    public BigDecimal getDiscount() {
         return discount;
     }
 
-    public void setDiscount(double discount) {
-        this.discount = discount;
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount != null ? discount : BigDecimal.ZERO;
     }
 
     public String getNote() {
@@ -131,23 +136,27 @@ public class OrderProduct {
         this.expireDate = expireDate;
     }
 
-    private double calculateQuantitySU(double quantity){
+    private double calculateQuantitySU(double quantity) {
         String unit = this.getUnit();
-        if(unit.equalsIgnoreCase(this.product.getGreatestUnit())){
+        if (unit.equalsIgnoreCase(this.product.getGreatestUnit())) {
             return quantity * this.product.getSmallestUnitAmount();
         } else if (unit.equalsIgnoreCase(this.product.getMediumUnit())) {
             return quantity * ((double) this.product.getSmallestUnitAmount() / this.product.getMediumUnitAmount());
-        }else{
+        } else {
             return quantity;
         }
     }
-    private double calculatePriceSU(double price){
-        double result = 0;
-        if (this.unit.equalsIgnoreCase(this.product.getGreatestUnit())){
-            result = price / this.product.getSmallestUnitAmount();
-        }else if (this.unit.equalsIgnoreCase(this.product.getMediumUnit())){
-            result = price / ((double) this.product.getSmallestUnitAmount() /this.product.getMediumUnitAmount());
-        }else{
+
+    private BigDecimal calculatePriceSU(BigDecimal price) {
+        if (price == null || unit == null || product == null)
+            return null;
+        BigDecimal result;
+        if (this.unit.equalsIgnoreCase(this.product.getGreatestUnit())) {
+            result = price.divide(BigDecimal.valueOf(this.product.getSmallestUnitAmount()), 2, RoundingMode.HALF_UP);
+        } else if (this.unit.equalsIgnoreCase(this.product.getMediumUnit())) {
+            double divisor = (double) this.product.getSmallestUnitAmount() / this.product.getMediumUnitAmount();
+            result = price.divide(BigDecimal.valueOf(divisor), 2, RoundingMode.HALF_UP);
+        } else {
             result = price;
         }
         return result;

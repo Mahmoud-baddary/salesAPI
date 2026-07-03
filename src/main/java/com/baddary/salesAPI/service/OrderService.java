@@ -12,6 +12,7 @@ import com.baddary.salesAPI.repository.OrderRepository;
 import com.baddary.salesAPI.repository.ProductRepository;
 import com.baddary.salesAPI.repository.UserRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,20 @@ public class OrderService {
                 stockService.decreaseStock(op.getProduct().getId(),
                         op.getExpireDate(), op.getQuantitySU());
             }
+        }
+        
+
+        // update customer money oweing
+        BigDecimal totalPrice = orderDTO.getTotalPrice();
+        if (totalPrice.compareTo(orderDTO.getPaidMoney()) == 1) {
+            BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
+            if (orderDTO.getOrderType() == OrderType.SALE) {
+                customer.setBalance(customer.getBalance().add(netChange));
+            }else{
+                customer.setBalance(customer.getBalance().subtract(netChange));
+            }
+            
+            customerRepository.save(customer);
         }
 
         return OrderMapper.toDTO(saved);

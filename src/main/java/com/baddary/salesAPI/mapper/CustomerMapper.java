@@ -16,6 +16,7 @@ public class CustomerMapper {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setId(entity.getId());
+        dto.setBalance(entity.getBalance());
         dto.getPhoneDTOSet().addAll(entity.getPhones().stream().map(PhoneMapper::toDTO).toList());
         return dto;
     }

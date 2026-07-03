@@ -2,6 +2,7 @@ package com.baddary.salesAPI.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -16,16 +17,17 @@ public class Stock {
     private LocalDate expire;
     private double quantitySU;
     private String batch;
-    private double priceSU;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal priceSU;
 
     public Stock() {
     }
 
-    public double getPriceSU() {
+    public BigDecimal getPriceSU() {
         return priceSU;
     }
 
-    public void setPriceSU(double priceSU) {
+    public void setPriceSU(BigDecimal priceSU) {
         this.priceSU = priceSU;
     }
 

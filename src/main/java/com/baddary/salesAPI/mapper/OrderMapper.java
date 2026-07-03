@@ -15,7 +15,7 @@ public class OrderMapper {
         entity.setTime(dto.getTime());
         entity.setDiscount(dto.getDiscount());
         entity.setUser(user);
-        entity.setPaymentType(dto.getPaymentType());
+        entity.setPaidMoney(dto.getPaidMoney());
         entity.setOrderType(dto.getOrderType());
         return entity;
     }
@@ -27,7 +27,7 @@ public class OrderMapper {
         dto.setTime(entity.getTime());
         dto.setOrderType(entity.getOrderType());
         dto.setDiscount(entity.getDiscount());
-        dto.setPaymentType(entity.getPaymentType());
+        dto.setPaymentType(entity.getPaidMoney());
         dto.setCustomerId(entity.getCustomer().getId());
         dto.setUserId(entity.getUser().getId());
         dto.setCustomerName(entity.getCustomer().getName());
