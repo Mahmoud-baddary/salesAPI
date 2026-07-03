@@ -40,11 +40,10 @@ public class OrderController {
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) LocalDate fromDate,
             @RequestParam(required = false) LocalDate toDate,
-            @RequestParam(required = false) OrderType orderType,
-            @RequestParam(required = false) PaymentType paymentType) {
+            @RequestParam(required = false) OrderType orderType) {
 
         List<OrderDTO> orders = orderService.searchOrders(
-                customerName, productName, userName, fromDate, toDate, orderType, paymentType);
+                customerName, productName, userName, fromDate, toDate, orderType);
         return ResponseEntity.ok(orders);
     }
 

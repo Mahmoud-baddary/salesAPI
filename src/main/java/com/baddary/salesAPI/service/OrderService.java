@@ -80,10 +80,9 @@ public class OrderService {
 
     public List<OrderDTO> searchOrders(String customerName, String productName,
             String userName, LocalDate fromDate,
-            LocalDate toDate, OrderType orderType,
-            PaymentType paymentType) {
+            LocalDate toDate, OrderType orderType) {
         List<Order> orders = orderRepository.searchOrders(
-                customerName, productName, userName, fromDate, toDate, orderType, paymentType);
+                customerName, productName, userName, fromDate, toDate, orderType);
         return orders.stream().map(OrderMapper::toDTO).toList();
     }
 

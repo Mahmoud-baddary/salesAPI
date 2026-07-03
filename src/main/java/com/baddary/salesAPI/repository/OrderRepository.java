@@ -27,15 +27,13 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
                         +
                         "AND (:fromDate IS NULL OR o.date >= :fromDate) " +
                         "AND (:toDate IS NULL OR o.date <= :toDate) " +
-                        "AND (:orderType IS NULL OR o.orderType = :orderType) " +
-                        "AND (:paymentType IS NULL OR o.paymentType = :paymentType)")
+                        "AND (:orderType IS NULL OR o.orderType = :orderType) ")
         List<Order> searchOrders(@Param("customerName") String customerName,
                         @Param("productName") String productName,
                         @Param("userName") String userName,
                         @Param("fromDate") LocalDate fromDate,
                         @Param("toDate") LocalDate toDate,
-                        @Param("orderType") OrderType orderType,
-                        @Param("paymentType") PaymentType paymentType);
+                        @Param("orderType") OrderType orderType);
 
         @Query("""        
                 SELECT o from Order o 
