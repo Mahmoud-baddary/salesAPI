@@ -4,7 +4,6 @@ import com.baddary.salesAPI.dto.OrderDTO;
 import com.baddary.salesAPI.dto.OrderProductDTO;
 import com.baddary.salesAPI.entity.*;
 import com.baddary.salesAPI.enums.OrderType;
-import com.baddary.salesAPI.enums.PaymentType;
 import com.baddary.salesAPI.mapper.OrderMapper;
 import com.baddary.salesAPI.mapper.OrderProductMapper;
 import com.baddary.salesAPI.repository.CustomerRepository;

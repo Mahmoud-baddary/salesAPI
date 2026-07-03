@@ -2,7 +2,6 @@ package com.baddary.salesAPI.repository;
 
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.enums.OrderType;
-import com.baddary.salesAPI.enums.PaymentType;
 
 import java.time.LocalDate;
 import java.util.List;
