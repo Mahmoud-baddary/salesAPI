@@ -124,7 +124,7 @@ public class OrderDTO {
     //             .mapToDouble(item -> (item.getQuantity() * item.getPrice()) * (1 - item.getDiscount() / 100.0))
     //             .sum() * (1 - discount / 100.0);
     // }
-    public BigDecimal getTotalPrice(){
+    public BigDecimal calculateTotalPrice(){
         BigDecimal totalPrice = BigDecimal.ZERO;
         orderProductDTOSet.forEach(item->{
             BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());

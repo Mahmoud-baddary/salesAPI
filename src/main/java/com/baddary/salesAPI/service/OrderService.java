@@ -61,7 +61,7 @@ public class OrderService {
         
 
         // update customer money oweing
-        BigDecimal totalPrice = orderDTO.getTotalPrice();
+        BigDecimal totalPrice = orderDTO.calculateTotalPrice();
         if (totalPrice.compareTo(orderDTO.getPaidMoney()) == 1) {
             BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
             if (orderDTO.getOrderType() == OrderType.SALE) {
