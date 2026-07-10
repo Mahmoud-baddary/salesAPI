@@ -89,7 +89,10 @@ public class OrderService {
 
     private void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
         BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
-
+        // if paid money is greater that totalprice then throw error
+        if (netChange.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("paid money must not be greater than order price");
+        }
         if (netChange.compareTo(BigDecimal.ZERO) != 0) {
             if (orderDTO.getOrderType() == OrderType.SALE) {
                 customer.setBalance(customer.getBalance().add(netChange));
