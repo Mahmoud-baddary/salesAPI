@@ -11,11 +11,14 @@ import com.baddary.salesAPI.repository.OrderRepository;
 import com.baddary.salesAPI.repository.ProductRepository;
 import com.baddary.salesAPI.repository.UserRepository;
 
+import jakarta.persistence.OptimisticLockException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +41,24 @@ public class OrderService {
 
     @Transactional
     public OrderDTO addOrder(OrderDTO orderDTO) {
+        int retries = 3;
+        while (retries > 0) {
+            try {
+                return doAddOrder(orderDTO);
+            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+                retries--;
+                if (retries == 0) {
+                    throw new RuntimeException("Customer balance was updated by another transaction. Please try again.",
+                            e);
+                }
+                // Retry with fresh data (the loop will re-fetch)
+            }
+        }
+        throw new RuntimeException("Unexpected error");
+    }
+
+    @Transactional
+    private OrderDTO doAddOrder(OrderDTO orderDTO) {
         Customer customer = customerRepository.findById(orderDTO.getCustomerId()).orElseThrow();
         User user = userRepository.findById(orderDTO.getUserId()).orElseThrow();
         Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer);
@@ -58,23 +79,25 @@ public class OrderService {
                         op.getExpireDate(), op.getQuantitySU());
             }
         }
-        
-
-        // update customer money oweing
+        // Update customer balance (this is where @Version is checked)
         BigDecimal totalPrice = orderDTO.calculateTotalPrice();
-        if (totalPrice.compareTo(orderDTO.getPaidMoney()) == 1) {
-            BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
-            if (orderDTO.getOrderType() == OrderType.SALE) {
-                customer.setBalance(customer.getBalance().add(netChange));
-            }else{
-                customer.setBalance(customer.getBalance().subtract(netChange));
-            }
-            
-            customerRepository.save(customer);
-        }
+        updateCustomerBalance(customer, orderDTO, totalPrice);
 
         return OrderMapper.toDTO(saved);
 
+    }
+
+    private void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
+        BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
+
+        if (netChange.compareTo(BigDecimal.ZERO) != 0) {
+            if (orderDTO.getOrderType() == OrderType.SALE) {
+                customer.setBalance(customer.getBalance().add(netChange));
+            } else {
+                customer.setBalance(customer.getBalance().subtract(netChange));
+            }
+            customerRepository.save(customer);
+        }
     }
 
     public List<OrderDTO> searchOrders(String customerName, String productName,
@@ -85,7 +108,7 @@ public class OrderService {
         return orders.stream().map(OrderMapper::toDTO).toList();
     }
 
-    public Optional<OrderDTO> findById(Long id){
+    public Optional<OrderDTO> findById(Long id) {
         return orderRepository.findById(id).map(OrderMapper::toDTO);
     }
 

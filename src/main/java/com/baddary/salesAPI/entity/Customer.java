@@ -13,6 +13,9 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Version
+    private long version;
+
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -32,6 +35,7 @@ public class Customer {
 
     // Getters and Setters (including the new ones)
 
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -73,5 +77,13 @@ public class Customer {
                 ", phones=" + phones +
                 ", amountOwed=" + balance +
                 '}';
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
     }
 }
