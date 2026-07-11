@@ -1,6 +1,5 @@
 package com.baddary.salesAPI.dto;
 
-
 import com.baddary.salesAPI.enums.OrderType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -32,11 +31,11 @@ public class OrderDTO {
 
     private String customerName;
     private String userName;
-    
 
     public Long getId() {
         return id;
     }
+
     public void setOrderProductDTOSet(Set<OrderProductDTO> orderProductDTOSet) {
         this.orderProductDTOSet.clear();
         if (orderProductDTOSet != null) {
@@ -107,31 +106,41 @@ public class OrderDTO {
     public Set<OrderProductDTO> getOrderProductDTOSet() {
         return orderProductDTOSet;
     }
+
     public String getCustomerName() {
         return customerName;
     }
+
     public void setCustomerName(String customerName) {
         this.customerName = customerName;
     }
+
     public String getUserName() {
         return userName;
     }
+
     public void setUserName(String userName) {
         this.userName = userName;
     }
+
     // public double getTotalPrice() {
-    //     return orderProductDTOSet.stream()
-    //             .mapToDouble(item -> (item.getQuantity() * item.getPrice()) * (1 - item.getDiscount() / 100.0))
-    //             .sum() * (1 - discount / 100.0);
+    // return orderProductDTOSet.stream()
+    // .mapToDouble(item -> (item.getQuantity() * item.getPrice()) * (1 -
+    // item.getDiscount() / 100.0))
+    // .sum() * (1 - discount / 100.0);
     // }
-    public BigDecimal calculateTotalPrice(){
+    public BigDecimal calculateTotalPrice() {
         BigDecimal totalPrice = BigDecimal.ZERO;
-        orderProductDTOSet.forEach(item->{
+        for (OrderProductDTO item : orderProductDTOSet) {
             BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
             BigDecimal price = item.getPrice();
             BigDecimal itemDiscount = item.getDiscount();
-            totalPrice.add((quantity.multiply(price).multiply(BigDecimal.ONE.subtract(itemDiscount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))));
-        });
-        return totalPrice.multiply(BigDecimal.ONE.subtract(this.discount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP))).setScale(2, RoundingMode.HALF_UP);
+            totalPrice = totalPrice.add((quantity.multiply(price).multiply(
+                    BigDecimal.ONE.subtract(itemDiscount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))));
+        }
+        return totalPrice
+                .multiply(BigDecimal.ONE
+                        .subtract(this.discount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 }

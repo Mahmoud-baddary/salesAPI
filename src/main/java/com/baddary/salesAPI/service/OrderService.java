@@ -89,6 +89,8 @@ public class OrderService {
 
     private void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
         BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
+        System.out.println("final price : " + totalPrice);
+        System.out.println("net change : " + netChange);
         // if paid money is greater that totalprice then throw error
         if (netChange.compareTo(BigDecimal.ZERO) < 0) {
             throw new RuntimeException("paid money must not be greater than order price");
