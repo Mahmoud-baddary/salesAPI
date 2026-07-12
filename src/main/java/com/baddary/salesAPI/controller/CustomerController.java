@@ -27,6 +27,13 @@ public class CustomerController {
         return customerService.searchByName(name);
     }
 
+    @GetMapping("/search-by-balance")
+    public List<CustomerDTO> searchByNameAndBalanceStatus(
+            @RequestParam(required = false) String name,
+            @RequestParam String balanceStatus) {
+        return customerService.searchByNameAndBalanceStatus(name, balanceStatus);
+    }
+
     @PostMapping
     public ResponseEntity<CustomerDTO> addCustomer(@RequestBody @Valid CustomerDTO dto) {
         CustomerDTO customerDTO = customerService.addCustomer(dto);

@@ -3,6 +3,7 @@ package com.baddary.salesAPI.repository;
 import com.baddary.salesAPI.entity.Customer;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,4 +33,14 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
     @Query("SELECT c FROM Customer c join fetch c.phones p where p.phoneNum = :phoneNum")
     Optional<Customer> findByPhone(String phoneNum);
 
+    @Query("SELECT c FROM Customer c WHERE " +
+            "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
+            "AND (" +
+            "   (:balanceStatus = 'ALL') OR " +
+            "   (:balanceStatus = 'OWES' AND c.balance > 0) OR " +
+            "   (:balanceStatus = 'DESERVES' AND c.balance < 0) OR " +
+            "   (:balanceStatus = 'SETTLED' AND c.balance = 0)" +
+            ")")
+    List<Customer> searchByNameAndBalanceStatus(@Param("name") String name,
+            @Param("balanceStatus") String balanceStatus);
 }

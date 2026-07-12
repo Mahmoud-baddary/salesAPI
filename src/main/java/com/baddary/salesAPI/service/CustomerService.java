@@ -76,4 +76,9 @@ public class CustomerService {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNum);
         return optionalCustomer.map(CustomerMapper::toDTO);
     }
+
+    public List<CustomerDTO> searchByNameAndBalanceStatus(String name, String balanceStatus){
+        List<Customer> customers = customerRepository.searchByNameAndBalanceStatus(name, balanceStatus);
+        return customers.stream().map(CustomerMapper::toDTO).toList();
+    }
 }
