@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,6 +57,16 @@ public class CustomerService {
         Customer saved = customerRepository.save(toUpdate);
         return CustomerMapper.toDTO(saved);
 
+    }
+
+    public CustomerDTO updateCustomerBalance(Long id, BigDecimal balance){
+        Optional<Customer> toUpdateOptional = customerRepository.findById(id);
+        Customer toUpdate = toUpdateOptional.orElseThrow(
+                ()->new RuntimeException("Customer is not found")
+        );
+        toUpdate.setBalance(balance);
+        Customer saved = customerRepository.save(toUpdate);
+        return CustomerMapper.toDTO(saved);
     }
 
     public List<String> findAllNames() {

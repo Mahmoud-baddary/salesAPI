@@ -6,7 +6,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers")
@@ -49,6 +51,18 @@ public class CustomerController {
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable long id, @RequestBody @Valid CustomerDTO dto) {
         CustomerDTO customerDTO = customerService.updateCustomer(id, dto);
         return ResponseEntity.status(200).body(customerDTO);
+    }
+
+    @PatchMapping("/{id}/balance")
+    public ResponseEntity<CustomerDTO> updateBalance(
+            @PathVariable long id,
+            @RequestBody Map<String, BigDecimal> payload) {
+        BigDecimal balance = payload.get("balance");
+        if (balance == null) {
+            throw new IllegalArgumentException("Balance is required");
+        }
+        CustomerDTO updated = customerService.updateCustomerBalance(id, balance);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/names")
