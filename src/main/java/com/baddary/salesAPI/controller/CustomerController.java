@@ -53,15 +53,15 @@ public class CustomerController {
         return ResponseEntity.status(200).body(customerDTO);
     }
 
-    @PatchMapping("/{id}/balance")
-    public ResponseEntity<CustomerDTO> updateBalance(
+    @PatchMapping("/{id}/settle")
+    public ResponseEntity<CustomerDTO> settleBalance(
             @PathVariable long id,
             @RequestBody Map<String, BigDecimal> payload) {
-        BigDecimal balance = payload.get("balance");
-        if (balance == null) {
-            throw new IllegalArgumentException("Balance is required");
+        BigDecimal amount = payload.get("amount");
+        if (amount == null) {
+            throw new IllegalArgumentException("amount is required");
         }
-        CustomerDTO updated = customerService.updateCustomerBalance(id, balance);
+        CustomerDTO updated = customerService.settleCustomerBalance(id, amount);
         return ResponseEntity.ok(updated);
     }
 

@@ -5,12 +5,17 @@ import com.baddary.salesAPI.entity.Customer;
 import com.baddary.salesAPI.mapper.CustomerMapper;
 import com.baddary.salesAPI.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
+
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
+import javax.management.RuntimeErrorException;
 
 @Service
 public class CustomerService {
@@ -59,14 +64,40 @@ public class CustomerService {
 
     }
 
-    public CustomerDTO updateCustomerBalance(Long id, BigDecimal balance){
+    private CustomerDTO doSettleCustomerBalance(Long id, BigDecimal amount){
         Optional<Customer> toUpdateOptional = customerRepository.findById(id);
         Customer toUpdate = toUpdateOptional.orElseThrow(
                 ()->new RuntimeException("Customer is not found")
         );
+        BigDecimal balance = toUpdate.getBalance();
+        if(amount.compareTo(balance.abs()) > 0){
+            throw new RuntimeException("amount must not be greater than balance");
+        }
+        if (balance.compareTo(BigDecimal.ZERO) < 0) {
+            balance = balance.add(amount);
+        }else if (balance.compareTo(BigDecimal.ZERO) > 0) {
+            balance = balance.subtract(amount);
+        }
         toUpdate.setBalance(balance);
         Customer saved = customerRepository.save(toUpdate);
         return CustomerMapper.toDTO(saved);
+    }
+
+    @Transactional
+    public CustomerDTO settleCustomerBalance(Long id, BigDecimal amount){
+        int retries = 3;
+        while (retries > 0) {
+            try {
+                return doSettleCustomerBalance(id, amount);
+            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+                retries--;
+                if (retries == 0) {
+                    throw new RuntimeException("Customer balance was updated by another transaction. Please try again.",
+                            e);
+                }
+            }
+        }
+        throw new RuntimeException("Unexpected error");
     }
 
     public List<String> findAllNames() {
