@@ -10,6 +10,7 @@ import com.baddary.salesAPI.repository.CustomerRepository;
 import com.baddary.salesAPI.repository.OrderRepository;
 import com.baddary.salesAPI.repository.ProductRepository;
 import com.baddary.salesAPI.repository.UserRepository;
+import com.baddary.salesAPI.specification.OrderSpecifications;
 
 import jakarta.persistence.OptimisticLockException;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,7 +84,6 @@ public class OrderService {
         // Update customer balance (this is where @Version is checked)
         BigDecimal totalPrice = orderDTO.calculateTotalPrice();
         updateCustomerBalance(customer, orderDTO, totalPrice);
-
         return OrderMapper.toDTO(saved);
 
     }
@@ -108,8 +109,26 @@ public class OrderService {
     public List<OrderDTO> searchOrders(String customerName, String productName,
             String userName, LocalDate fromDate,
             LocalDate toDate, OrderType orderType) {
-        List<Order> orders = orderRepository.searchOrders(
-                customerName, productName, userName, fromDate, toDate, orderType);
+        Specification<Order> spec = Specification
+                .where(OrderSpecifications.customerNameContains(customerName))
+                .and(OrderSpecifications.productNameContains(productName))
+                .and(OrderSpecifications.userNameContains(userName))
+                .and(OrderSpecifications.dateBetween(fromDate, toDate))
+                .and(OrderSpecifications.orderTypeEquals(orderType));
+        List<Order> orders = orderRepository.findAll(spec);
+        ;
+
+        return orders.stream().map(OrderMapper::toDTO).toList();
+    }
+
+    public List<OrderDTO> searchOrders(Long customerId, LocalDate fromDate,
+            LocalDate toDate, OrderType orderType) {
+        
+        Specification<Order> spec = Specification
+        .where(OrderSpecifications.customerIdEqual(customerId))
+        .and(OrderSpecifications.dateBetween(fromDate, toDate))
+        .and(OrderSpecifications.orderTypeEquals(orderType));
+        List<Order> orders = orderRepository.findAll(spec);
         return orders.stream().map(OrderMapper::toDTO).toList();
     }
 

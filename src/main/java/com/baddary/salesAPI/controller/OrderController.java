@@ -46,6 +46,18 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/{customerId}/search")
+    public ResponseEntity<List<OrderDTO>> searchOrders(
+            @PathVariable long customerId,
+            @RequestParam(required = true) LocalDate fromDate,
+            @RequestParam(required = true) LocalDate toDate,
+            @RequestParam(required = true) OrderType orderType) {
+
+        List<OrderDTO> orders = orderService.searchOrders(
+                customerId, fromDate, toDate, orderType);
+        return ResponseEntity.ok(orders);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<OrderDTO> findById(@PathVariable long id) {
         return orderService.findById(id).map(ResponseEntity::ok)
