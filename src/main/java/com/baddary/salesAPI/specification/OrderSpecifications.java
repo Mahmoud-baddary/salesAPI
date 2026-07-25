@@ -7,7 +7,6 @@ import org.springframework.data.jpa.domain.Specification;
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.enums.OrderType;
 
-import jakarta.persistence.criteria.Join;
 
 public class OrderSpecifications {
     public static Specification<Order> customerNameContains(String name) {

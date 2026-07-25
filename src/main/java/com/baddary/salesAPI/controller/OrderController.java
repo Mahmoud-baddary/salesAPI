@@ -51,7 +51,7 @@ public class OrderController {
             @PathVariable long customerId,
             @RequestParam(required = true) LocalDate fromDate,
             @RequestParam(required = true) LocalDate toDate,
-            @RequestParam(required = true) OrderType orderType) {
+            @RequestParam(required = false) OrderType orderType) {
 
         List<OrderDTO> orders = orderService.searchOrders(
                 customerId, fromDate, toDate, orderType);
