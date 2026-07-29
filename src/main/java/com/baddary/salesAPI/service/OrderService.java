@@ -31,17 +31,21 @@ public class OrderService {
     private final StockService stockService;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final CustomerService customerService;
+    private final CashService cashService;
 
     public OrderService(OrderRepository orderRepository, ProductRepository productRepository, StockService stockService,
-            CustomerRepository customerRepository, UserRepository userRepository) {
+            CustomerRepository customerRepository, UserRepository userRepository, CustomerService customerService,
+            CashService cashService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.stockService = stockService;
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
+        this.customerService = customerService;
+        this.cashService = cashService;
     }
 
-    @Transactional
     public OrderDTO addOrder(OrderDTO orderDTO) {
         int retries = 3;
         while (retries > 0) {
@@ -60,7 +64,7 @@ public class OrderService {
     }
 
     @Transactional
-    private OrderDTO doAddOrder(OrderDTO orderDTO) {
+    public OrderDTO doAddOrder(OrderDTO orderDTO) {
         Customer customer = customerRepository.findById(orderDTO.getCustomerId()).orElseThrow();
         User user = userRepository.findById(orderDTO.getUserId()).orElseThrow();
         Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer);
@@ -81,29 +85,14 @@ public class OrderService {
                         op.getExpireDate(), op.getQuantitySU());
             }
         }
-        // Update customer balance (this is where @Version is checked)
+        // Update customer balance
         BigDecimal totalPrice = orderDTO.calculateTotalPrice();
-        updateCustomerBalance(customer, orderDTO, totalPrice);
+        customerService.updateCustomerBalance(customer, orderDTO, totalPrice);
+
+        // update user cash
+        this.cashService.increaseUserCash(orderDTO.getUserId(), orderDTO.getPaidMoney());
         return OrderMapper.toDTO(saved);
 
-    }
-
-    private void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
-        BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
-        System.out.println("final price : " + totalPrice);
-        System.out.println("net change : " + netChange);
-        // if paid money is greater that totalprice then throw error
-        if (netChange.compareTo(BigDecimal.ZERO) < 0) {
-            throw new RuntimeException("paid money must not be greater than order price");
-        }
-        if (netChange.compareTo(BigDecimal.ZERO) != 0) {
-            if (orderDTO.getOrderType() == OrderType.SALE) {
-                customer.setBalance(customer.getBalance().add(netChange));
-            } else {
-                customer.setBalance(customer.getBalance().subtract(netChange));
-            }
-            customerRepository.save(customer);
-        }
     }
 
     public List<OrderDTO> searchOrders(String customerName, String productName,
@@ -123,11 +112,11 @@ public class OrderService {
 
     public List<OrderDTO> searchOrders(Long customerId, LocalDate fromDate,
             LocalDate toDate, OrderType orderType) {
-        
+
         Specification<Order> spec = Specification
-        .where(OrderSpecifications.customerIdEqual(customerId))
-        .and(OrderSpecifications.dateBetween(fromDate, toDate))
-        .and(OrderSpecifications.orderTypeEquals(orderType));
+                .where(OrderSpecifications.customerIdEqual(customerId))
+                .and(OrderSpecifications.dateBetween(fromDate, toDate))
+                .and(OrderSpecifications.orderTypeEquals(orderType));
         List<Order> orders = orderRepository.findAll(spec);
         return orders.stream().map(OrderMapper::toDTO).toList();
     }

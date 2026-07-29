@@ -3,6 +3,7 @@ package com.baddary.salesAPI.controller;
 import java.util.Optional;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,14 +33,14 @@ public class AuthController {
         Optional<UserDTO> userOpt = userService.findByNameIgnoreCase(loginRequest.getUsername());
         if (userOpt.isEmpty()) {
             // User not found – return 401 (Unauthorized)
-            throw new RuntimeException("User name or password is incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UserDTO user = userOpt.get();
 
         // 2. Verify password (raw from request vs stored hash)
         if (!BCrypt.checkpw(loginRequest.getPassword(), user.getPassword())) {
-            throw new RuntimeException("User name or password is incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // 3. Generate a token (for now, a simple UUID; replace with JWT later)

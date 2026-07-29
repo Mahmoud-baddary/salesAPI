@@ -1,7 +1,10 @@
 package com.baddary.salesAPI.service;
 
 import com.baddary.salesAPI.dto.CustomerDTO;
+import com.baddary.salesAPI.dto.OrderDTO;
 import com.baddary.salesAPI.entity.Customer;
+import com.baddary.salesAPI.enums.OrderType;
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.mapper.CustomerMapper;
 import com.baddary.salesAPI.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
@@ -53,7 +56,7 @@ public class CustomerService {
     public CustomerDTO updateCustomer(Long id, CustomerDTO dto) {
         Optional<Customer> toUpdateOptional = customerRepository.findById(id);
         Customer toUpdate = toUpdateOptional.orElseThrow(
-                ()->new RuntimeException("Customer is not found")
+                ()->new ResourceNotFoundException("Customer is not found")
         );
         toUpdate.getPhones().clear();
         entityManager.flush();
@@ -62,11 +65,26 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
 
     }
-
-    private CustomerDTO doSettleCustomerBalance(Long id, BigDecimal amount){
+    public void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
+        BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
+        // if paid money is greater that totalprice then throw error
+        if (netChange.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("paid money must not be greater than order price");
+        }
+        if (netChange.compareTo(BigDecimal.ZERO) != 0) {
+            if (orderDTO.getOrderType() == OrderType.SALE) {
+                customer.setBalance(customer.getBalance().add(netChange));
+            } else {
+                customer.setBalance(customer.getBalance().subtract(netChange));
+            }
+            customerRepository.save(customer);
+        }
+    }
+    @Transactional
+    public CustomerDTO doSettleCustomerBalance(Long id, BigDecimal amount){
         Optional<Customer> toUpdateOptional = customerRepository.findById(id);
         Customer toUpdate = toUpdateOptional.orElseThrow(
-                ()->new RuntimeException("Customer is not found")
+                ()->new ResourceNotFoundException("Customer is not found")
         );
         BigDecimal balance = toUpdate.getBalance();
         if(amount.compareTo(balance.abs()) > 0){
@@ -82,7 +100,6 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
     }
 
-    @Transactional
     public CustomerDTO settleCustomerBalance(Long id, BigDecimal amount){
         int retries = 3;
         while (retries > 0) {

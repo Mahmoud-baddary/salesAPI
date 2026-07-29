@@ -3,6 +3,7 @@ package com.baddary.salesAPI.service;
 import com.baddary.salesAPI.dto.StockDTO;
 import com.baddary.salesAPI.entity.Product;
 import com.baddary.salesAPI.entity.Stock;
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.mapper.StockMapper;
 import com.baddary.salesAPI.repository.OrderRepository;
 import com.baddary.salesAPI.repository.ProductRepository;
@@ -27,7 +28,8 @@ public class StockService {
     }
 
     public void increaseStock(Long productId, LocalDate expire, String batch, double quantitySU, BigDecimal priceSU) {
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productRepository.findById(productId)
+        .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
         Stock stock = stockRepository.findByProductIdAndExpire(productId, expire)
                 .orElseGet(() -> {
                     Stock s = new Stock();
@@ -45,7 +47,7 @@ public class StockService {
     @Transactional
     public void decreaseStock(Long productId, LocalDate expire, double quantitySU) {
         Stock stock = stockRepository.findStockForUpdate(productId, expire)
-                .orElseThrow(() -> new RuntimeException("Stock not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Stock not found"));
         // 2. Check if we have enough stock (now guaranteed to be the latest value)
         if (stock.getQuantitySU() < quantitySU) {
             throw new RuntimeException(

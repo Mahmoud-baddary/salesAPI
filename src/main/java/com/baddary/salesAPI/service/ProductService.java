@@ -2,6 +2,7 @@ package com.baddary.salesAPI.service;
 
 import com.baddary.salesAPI.dto.ProductDTO;
 import com.baddary.salesAPI.entity.Product;
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.mapper.ProductMapper;
 import com.baddary.salesAPI.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
@@ -29,7 +30,7 @@ public class ProductService {
     @Transactional
     public ProductDTO updateProduct(long id, ProductDTO dto) {
         Optional<Product> optionalProduct = productRepository.findById(id);
-        Product productToUpdate = optionalProduct.orElseThrow(()->new RuntimeException("Product is not found"));
+        Product productToUpdate = optionalProduct.orElseThrow(()->new ResourceNotFoundException("Product is not found"));
         productToUpdate.getBarcodes().clear();
         entityManager.flush();
         ProductMapper.updateEntity(productToUpdate, dto);
