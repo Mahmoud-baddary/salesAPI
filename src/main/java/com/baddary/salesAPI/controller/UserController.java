@@ -3,7 +3,6 @@ package com.baddary.salesAPI.controller;
 import com.baddary.salesAPI.dto.UserDTO;
 import com.baddary.salesAPI.service.UserService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
