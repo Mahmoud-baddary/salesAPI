@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,18 +31,15 @@ public class UserController {
         return userService.count();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<UserDTO> addUser(@RequestBody @Valid UserDTO userDTO, HttpServletRequest request) {
-        String role = (String) request.getAttribute("userRole");
-        if (role == null || !"ADMIN".equals(role)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+    public ResponseEntity<UserDTO> addUser(@RequestBody @Valid UserDTO userDTO) {
         UserDTO dto = userService.addUser(userDTO);
         return ResponseEntity.status(201).body(dto);
     }
 
     @PostMapping("/first")
-    public ResponseEntity<UserDTO> addUser(@RequestBody @Valid UserDTO userDTO) {
+    public ResponseEntity<UserDTO> addUserFirst(@RequestBody @Valid UserDTO userDTO) {
         if (userService.count() > 0) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }

@@ -7,6 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import java.util.Collections;
 
 import java.io.IOException;
 
@@ -27,20 +31,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Allow login endpoint without token
+        // Allow public endpoints without token
         if (path.equals("/auth/login") || path.equals("/users/first") || path.equals("/users/count")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             if (jwtUtil.validateToken(token)) {
-                // Extract role from token and store it in request
+                // Extract username and role from token
+                String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
-                request.setAttribute("userRole", role);
+
+                // ✅ Create Spring Security authority (ROLE_ prefix is required)
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
+
+                // ✅ Create authentication object
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username,
+                        null, Collections.singletonList(authority));
+
+                // ✅ Store it in SecurityContext (this is what makes @PreAuthorize work)
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
                 filterChain.doFilter(request, response);
                 return;
             } else {
