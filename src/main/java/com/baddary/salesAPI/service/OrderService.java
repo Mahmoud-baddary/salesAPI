@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,25 +45,9 @@ public class OrderService {
         this.cashService = cashService;
     }
 
-    public OrderDTO addOrder(OrderDTO orderDTO) {
-        int retries = 3;
-        while (retries > 0) {
-            try {
-                return doAddOrder(orderDTO);
-            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-                retries--;
-                if (retries == 0) {
-                    throw new RuntimeException("Customer balance was updated by another transaction. Please try again.",
-                            e);
-                }
-                // Retry with fresh data (the loop will re-fetch)
-            }
-        }
-        throw new RuntimeException("Unexpected error");
-    }
 
     @Transactional
-    public OrderDTO doAddOrder(OrderDTO orderDTO) {
+    public OrderDTO addOrder(OrderDTO orderDTO) {
         Customer customer = customerRepository.findById(orderDTO.getCustomerId()).orElseThrow();
         User user = userRepository.findById(orderDTO.getUserId()).orElseThrow();
         Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer);
@@ -75,22 +58,25 @@ public class OrderService {
         }
         Order saved = orderRepository.save(orderEntity);
         if (orderEntity.getOrderType() == OrderType.BUY) {
+            // buy means increase stock and decrease cash
             for (OrderProduct op : orderEntity.getOrderProductSet()) {
                 stockService.increaseStock(op.getProduct().getId(),
                         op.getExpireDate(), op.getBatch(), op.getQuantitySU(), op.getPriceSU());
             }
-        } else {
+            // update user cash
+            this.cashService.decreaseUserCash(orderDTO.getUserId(), orderDTO.getPaidMoney());
+        } else { // sell increase cash and decrease the stock
             for (OrderProduct op : orderEntity.getOrderProductSet()) {
                 stockService.decreaseStock(op.getProduct().getId(),
                         op.getExpireDate(), op.getQuantitySU());
             }
+            // update user cash
+            this.cashService.increaseUserCash(orderDTO.getUserId(), orderDTO.getPaidMoney());
         }
         // Update customer balance
         BigDecimal totalPrice = orderDTO.calculateTotalPrice();
         customerService.updateCustomerBalance(customer, orderDTO, totalPrice);
 
-        // update user cash
-        this.cashService.increaseUserCash(orderDTO.getUserId(), orderDTO.getPaidMoney());
         return OrderMapper.toDTO(saved);
 
     }

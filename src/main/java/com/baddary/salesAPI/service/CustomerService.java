@@ -23,11 +23,13 @@ import java.util.Optional;
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final EntityManager entityManager;
+    private final CashService cashService;
 
 
-    public CustomerService(CustomerRepository customerRepository, EntityManager entityManager) {
+    public CustomerService(CustomerRepository customerRepository, EntityManager entityManager, CashService cashService) {
         this.customerRepository = customerRepository;
         this.entityManager = entityManager;
+        this.cashService = cashService;
     }
 
     public List<CustomerDTO> findAll() {
@@ -81,8 +83,8 @@ public class CustomerService {
         }
     }
     @Transactional
-    public CustomerDTO doSettleCustomerBalance(Long id, BigDecimal amount){
-        Optional<Customer> toUpdateOptional = customerRepository.findById(id);
+    public CustomerDTO doSettleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
+        Optional<Customer> toUpdateOptional = customerRepository.findById(customerId);
         Customer toUpdate = toUpdateOptional.orElseThrow(
                 ()->new ResourceNotFoundException("Customer is not found")
         );
@@ -90,21 +92,24 @@ public class CustomerService {
         if(amount.compareTo(balance.abs()) > 0){
             throw new RuntimeException("amount must not be greater than balance");
         }
-        if (balance.compareTo(BigDecimal.ZERO) < 0) {
+        if (balance.compareTo(BigDecimal.ZERO) < 0) { // DESERVE
             balance = balance.add(amount);
-        }else if (balance.compareTo(BigDecimal.ZERO) > 0) {
+            cashService.decreaseUserCash(userId, amount);
+            
+        }else if (balance.compareTo(BigDecimal.ZERO) > 0) { // OWE
             balance = balance.subtract(amount);
+            cashService.increaseUserCash(userId, amount);
         }
         toUpdate.setBalance(balance);
         Customer saved = customerRepository.save(toUpdate);
         return CustomerMapper.toDTO(saved);
     }
 
-    public CustomerDTO settleCustomerBalance(Long id, BigDecimal amount){
+    public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
         int retries = 3;
         while (retries > 0) {
             try {
-                return doSettleCustomerBalance(id, amount);
+                return doSettleCustomerBalance(customerId, userId, amount);
             } catch (OptimisticLockException | OptimisticLockingFailureException e) {
                 retries--;
                 if (retries == 0) {

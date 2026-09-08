@@ -1,5 +1,6 @@
 package com.baddary.salesAPI.controller;
 
+import com.baddary.salesAPI.dto.CashDTO;
 import com.baddary.salesAPI.dto.CustomerDTO;
 import com.baddary.salesAPI.service.CustomerService;
 import jakarta.validation.Valid;
@@ -53,15 +54,11 @@ public class CustomerController {
         return ResponseEntity.status(200).body(customerDTO);
     }
 
-    @PatchMapping("/{id}/settle")
+    @PostMapping("/{customerId}/settle")
     public ResponseEntity<CustomerDTO> settleBalance(
-            @PathVariable long id,
-            @RequestBody Map<String, BigDecimal> payload) {
-        BigDecimal amount = payload.get("amount");
-        if (amount == null) {
-            throw new IllegalArgumentException("amount is required");
-        }
-        CustomerDTO updated = customerService.settleCustomerBalance(id, amount);
+            @PathVariable long customerId,
+            @RequestBody @Valid CashDTO cashDTO) {
+        CustomerDTO updated = customerService.settleCustomerBalance(customerId, cashDTO.getUserId(), cashDTO.getAmount());
         return ResponseEntity.ok(updated);
     }
 
