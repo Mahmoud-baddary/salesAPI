@@ -3,7 +3,7 @@ package com.baddary.salesAPI.service;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.springframework.dao.OptimisticLockingFailureException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +13,6 @@ import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.repository.CashRegisterRepository;
 import com.baddary.salesAPI.repository.SafeRepository;
 
-import jakarta.persistence.OptimisticLockException;
 
 @Service
 public class CashService {
@@ -26,23 +25,23 @@ public class CashService {
         this.cashRegisterRepository = cashRegisterRepository;
     }
 
-    public void depositCashToSafe(Long userId, BigDecimal amount) {
-        int retries = 3;
-        while (retries > 0) {
-            try {
-                doDeposit(userId, amount);
-                return;
-            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-                retries--;
-                if (retries == 0) {
-                    throw new RuntimeException("Deposit failed due to concurrent update. Please try again.");
-                }
-            }
-        }
-    }
+    // public void depositCashToSafe(Long userId, BigDecimal amount) {
+    //     int retries = 3;
+    //     while (retries > 0) {
+    //         try {
+    //             doDeposit(userId, amount);
+    //             return;
+    //         } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+    //             retries--;
+    //             if (retries == 0) {
+    //                 throw new RuntimeException("Deposit failed due to concurrent update. Please try again.");
+    //             }
+    //         }
+    //     }
+    // }
 
     @Transactional
-    public void doReceiveCashFromUser(Long userFromId, Long userToId, BigDecimal amount) {
+    public void receiveCashFromUser(Long userFromId, Long userToId, BigDecimal amount) {
         CashRegister registerFrom = cashRegisterRepository.findByUserId(userFromId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register not found for user that will deliver"));
         CashRegister registerTo = cashRegisterRepository.findByUserId(userToId)
@@ -61,7 +60,7 @@ public class CashService {
     }
 
     @Transactional
-    public void doReceiveCashFromSafe(Long userId, BigDecimal amount) {
+    public void receiveCashFromSafe(Long userId, BigDecimal amount) {
         CashRegister register = cashRegisterRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register not found for user"));
         Safe safe = safeRepository.findAll().getFirst();
@@ -78,23 +77,23 @@ public class CashService {
         safeRepository.save(safe);
     }
 
-    public void receiveCashFromSafe(Long userId, BigDecimal amount) {
-        int retries = 3;
-        while (retries > 0) {
-            try {
-                doReceiveCashFromSafe(userId, amount);
-                return;
-            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-                retries--;
-                if (retries == 0) {
-                    throw new RuntimeException("Deposit failed due to concurrent update. Please try again.");
-                }
-            }
-        }
-    }
+    // public void receiveCashFromSafe(Long userId, BigDecimal amount) {
+    //     int retries = 3;
+    //     while (retries > 0) {
+    //         try {
+    //             doReceiveCashFromSafe(userId, amount);
+    //             return;
+    //         } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+    //             retries--;
+    //             if (retries == 0) {
+    //                 throw new RuntimeException("Deposit failed due to concurrent update. Please try again.");
+    //             }
+    //         }
+    //     }
+    // }
 
     @Transactional
-    public void doDeposit(Long userId, BigDecimal amount) {
+    public void depositCashToSafe(Long userId, BigDecimal amount) {
         // 1. Fetch cash register for the user (with lock)
         CashRegister register = cashRegisterRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register not found for user"));
@@ -120,7 +119,7 @@ public class CashService {
     }
 
     @Transactional
-    public void doIncreaseUserCash(Long userId, BigDecimal amount) {
+    public void increaseUserCash(Long userId, BigDecimal amount) {
         CashRegister register = cashRegisterRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register not found for user"));
         register.setCurrentAmount(register.getCurrentAmount().add(amount));
@@ -128,7 +127,7 @@ public class CashService {
     }
 
     @Transactional
-    public void doDecreaseUserCash(Long userId, BigDecimal amount) {
+    public void decreaseUserCash(Long userId, BigDecimal amount) {
         CashRegister register = cashRegisterRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register not found for user"));
         
@@ -139,35 +138,35 @@ public class CashService {
         cashRegisterRepository.save(register);
     }
 
-    public void decreaseUserCash(Long userId, BigDecimal amount) {
-        int retries = 3;
-        while (retries > 0) {
-            try {
-                doDecreaseUserCash(userId, amount);
-                return;
-            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-                retries--;
-                if (retries == 0) {
-                    throw new RuntimeException("Failed to update cash due to concurrent update. Please try again.");
-                }
-            }
-        }
-    }
+    // public void decreaseUserCash(Long userId, BigDecimal amount) {
+    //     int retries = 3;
+    //     while (retries > 0) {
+    //         try {
+    //             doDecreaseUserCash(userId, amount);
+    //             return;
+    //         } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+    //             retries--;
+    //             if (retries == 0) {
+    //                 throw new RuntimeException("Failed to update cash due to concurrent update. Please try again.");
+    //             }
+    //         }
+    //     }
+    // }
 
-    public void increaseUserCash(Long userId, BigDecimal amount) {
-        int retries = 3;
-        while (retries > 0) {
-            try {
-                doIncreaseUserCash(userId, amount);
-                return;
-            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-                retries--;
-                if (retries == 0) {
-                    throw new RuntimeException("Failed to update cash due to concurrent update. Please try again.");
-                }
-            }
-        }
-    }
+    // public void increaseUserCash(Long userId, BigDecimal amount) {
+    //     int retries = 3;
+    //     while (retries > 0) {
+    //         try {
+    //             doIncreaseUserCash(userId, amount);
+    //             return;
+    //         } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+    //             retries--;
+    //             if (retries == 0) {
+    //                 throw new RuntimeException("Failed to update cash due to concurrent update. Please try again.");
+    //             }
+    //         }
+    //     }
+    // }
 
     public Optional<BigDecimal> currentAmount(Long userId) {
         return cashRegisterRepository.currentAmount(userId);

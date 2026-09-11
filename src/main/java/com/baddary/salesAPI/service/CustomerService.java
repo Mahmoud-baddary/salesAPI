@@ -8,9 +8,7 @@ import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.mapper.CustomerMapper;
 import com.baddary.salesAPI.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.OptimisticLockException;
 
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,7 +81,7 @@ public class CustomerService {
         }
     }
     @Transactional
-    public CustomerDTO doSettleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
+    public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
         Optional<Customer> toUpdateOptional = customerRepository.findById(customerId);
         Customer toUpdate = toUpdateOptional.orElseThrow(
                 ()->new ResourceNotFoundException("Customer is not found")
@@ -105,21 +103,21 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
     }
 
-    public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
-        int retries = 3;
-        while (retries > 0) {
-            try {
-                return doSettleCustomerBalance(customerId, userId, amount);
-            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-                retries--;
-                if (retries == 0) {
-                    throw new RuntimeException("Customer balance was updated by another transaction. Please try again.",
-                            e);
-                }
-            }
-        }
-        throw new RuntimeException("Unexpected error");
-    }
+    // public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
+    //     int retries = 3;
+    //     while (retries > 0) {
+    //         try {
+    //             return doSettleCustomerBalance(customerId, userId, amount);
+    //         } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+    //             retries--;
+    //             if (retries == 0) {
+    //                 throw new RuntimeException("Customer balance was updated by another transaction. Please try again.",
+    //                         e);
+    //             }
+    //         }
+    //     }
+    //     throw new RuntimeException("Unexpected error");
+    // }
 
     public List<String> findAllNames() {
         return customerRepository.findNameBy();

@@ -1,11 +1,14 @@
 package com.baddary.salesAPI.exception;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import jakarta.persistence.OptimisticLockException;
 
 import java.util.List;
 
@@ -28,6 +31,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    //OptimisticLockingFailureException
+
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<String> handleOptimisticLock(OptimisticLockException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<String> handleOptimisticLockingFailure(OptimisticLockingFailureException e){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

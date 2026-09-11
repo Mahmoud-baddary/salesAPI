@@ -12,7 +12,6 @@ import com.baddary.salesAPI.repository.ProductRepository;
 import com.baddary.salesAPI.repository.UserRepository;
 import com.baddary.salesAPI.specification.OrderSpecifications;
 
-import jakarta.persistence.OptimisticLockException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
