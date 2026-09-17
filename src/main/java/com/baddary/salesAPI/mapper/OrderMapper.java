@@ -8,9 +8,10 @@ import com.baddary.salesAPI.entity.User;
 
 public class OrderMapper {
     private OrderMapper(){}
-    public static Order toEntity (OrderDTO dto, User user, Customer customer){
+    public static Order toEntity (OrderDTO dto, User user, Customer customer, Order originalOrder){
         Order entity = new Order();
         entity.setCustomer(customer);
+        entity.setOriginalOrder(originalOrder);
         entity.setDate(dto.getDate());
         entity.setTime(dto.getTime());
         entity.setDiscount(dto.getDiscount());
@@ -27,11 +28,13 @@ public class OrderMapper {
         dto.setTime(entity.getTime());
         dto.setOrderType(entity.getOrderType());
         dto.setDiscount(entity.getDiscount());
-        dto.setPaymentType(entity.getPaidMoney());
+        dto.setPaidMoney(entity.getPaidMoney());
         dto.setCustomerId(entity.getCustomer().getId());
         dto.setUserId(entity.getUser().getId());
         dto.setCustomerName(entity.getCustomer().getName());
         dto.setUserName(entity.getUser().getName());
+        Long originalOrderId = entity.getOriginalOrder() == null ? null : entity.getOriginalOrder().getId();
+        dto.setOriginalOrderId(originalOrderId);
         dto.getOrderProductDTOSet().addAll(entity.getOrderProductSet().stream().map(OrderProductMapper::toDTO).toList());
 
         return dto;

@@ -26,6 +26,7 @@ public class OrderDTO {
     private Long customerId;
     @NotNull(message = "User id is required")
     private Long userId;
+    private Long originalOrderId; 
     @Valid
     private final Set<OrderProductDTO> orderProductDTOSet = new HashSet<>();
 
@@ -75,10 +76,6 @@ public class OrderDTO {
         return paidMoney;
     }
 
-    public void setPaymentType(BigDecimal paidMoney) {
-        this.paidMoney = paidMoney;
-    }
-
     public BigDecimal getDiscount() {
         return discount;
     }
@@ -99,9 +96,12 @@ public class OrderDTO {
         return userId;
     }
 
+    
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
+    
 
     public Set<OrderProductDTO> getOrderProductDTOSet() {
         return orderProductDTOSet;
@@ -142,5 +142,17 @@ public class OrderDTO {
                 .multiply(BigDecimal.ONE
                         .subtract(this.discount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public void setPaidMoney(BigDecimal paidMoney) {
+        this.paidMoney = paidMoney;
+    }
+
+    public Long getOriginalOrderId() {
+        return originalOrderId;
+    }
+
+    public void setOriginalOrderId(Long originalOrderId) {
+        this.originalOrderId = originalOrderId;
     }
 }

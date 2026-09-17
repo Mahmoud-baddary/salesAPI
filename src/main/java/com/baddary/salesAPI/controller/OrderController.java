@@ -1,11 +1,10 @@
 package com.baddary.salesAPI.controller;
 
 import com.baddary.salesAPI.dto.OrderDTO;
-import com.baddary.salesAPI.enums.OrderType;
+import com.baddary.salesAPI.dto.OrderSearchDTO;
+
 import com.baddary.salesAPI.service.OrderService;
 import jakarta.validation.Valid;
-
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,31 +30,14 @@ public class OrderController {
         return ResponseEntity.status(201).body(dto);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<OrderDTO>> searchOrders(
-            @RequestParam(required = false) String customerName,
-            @RequestParam(required = false) String productName,
-            @RequestParam(required = false) String userName,
-            @RequestParam(required = false) LocalDate fromDate,
-            @RequestParam(required = false) LocalDate toDate,
-            @RequestParam(required = false) OrderType orderType) {
+    @PostMapping("/search")
+    public ResponseEntity<List<OrderDTO>> searchOrders(@RequestBody @Valid OrderSearchDTO dto) {
 
-        List<OrderDTO> orders = orderService.searchOrders(
-                customerName, productName, userName, fromDate, toDate, orderType);
+        List<OrderDTO> orders = orderService.searchOrders(dto);
         return ResponseEntity.ok(orders);
     }
 
-    @GetMapping("/{customerId}/search")
-    public ResponseEntity<List<OrderDTO>> searchOrders(
-            @PathVariable long customerId,
-            @RequestParam(required = true) LocalDate fromDate,
-            @RequestParam(required = true) LocalDate toDate,
-            @RequestParam(required = false) OrderType orderType) {
-
-        List<OrderDTO> orders = orderService.searchOrders(
-                customerId, fromDate, toDate, orderType);
-        return ResponseEntity.ok(orders);
-    }
+    
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderDTO> findById(@PathVariable long id) {

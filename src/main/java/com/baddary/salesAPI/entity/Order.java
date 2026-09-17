@@ -12,10 +12,6 @@ import java.util.Set;
 @Entity
 @Table(name = "orders")
 public class Order {
-    public static int BUY = 1;
-    public static int SELL = 2;
-    public static int INSTANT = 3;
-    public static int DEFFERED = 4;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -45,32 +41,17 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "original_order_id")
+    private Order originalOrder;   // null for normal orders, set for returns
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private final Set<OrderProduct> orderProductSet = new HashSet<>();
 
-    // Constructors
-    public Order(LocalDate date, LocalTime time, OrderType Type, BigDecimal paidMoney, BigDecimal discount, Customer customer, User user) {
-        this.date = date;
-        this.time = time;
-        this.orderType = Type;
-        this.paidMoney = paidMoney;
-        this.discount = discount;
-        this.customer = customer;
-        this.user = user;
-    }
+    
 
     public Order() { }
 
-    public Order(Long id, LocalDate date, LocalTime time, OrderType Type, BigDecimal paidMoney, BigDecimal discount, Customer customer, User user) {
-        this.id = id;
-        this.date = date;
-        this.time = time;
-        this.orderType = Type;
-        this.paidMoney = paidMoney;
-        this.discount = discount;
-        this.customer = customer;
-        this.user = user;
-    }
 
     // Getters and setters
     public Long getId() { return id; }
@@ -99,6 +80,8 @@ public class Order {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
+    
+
     public void addOrderProduct(OrderProduct orderProduct) {
         this.orderProductSet.add(orderProduct);
         orderProduct.setOrder(this);
@@ -126,5 +109,14 @@ public class Order {
                 ", user=" + user +
                 ", orderProductSet=" + orderProductSet +
                 '}';
+    }
+
+    public Order getOriginalOrder() {
+        return originalOrder;
+    }
+
+
+    public void setOriginalOrder(Order originalOrder) {
+        this.originalOrder = originalOrder;
     }
 }

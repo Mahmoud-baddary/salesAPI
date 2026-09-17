@@ -72,7 +72,7 @@ public class CustomerService {
             throw new RuntimeException("paid money must not be greater than order price");
         }
         if (netChange.compareTo(BigDecimal.ZERO) != 0) {
-            if (orderDTO.getOrderType() == OrderType.SALE) {
+            if (orderDTO.getOrderType() == OrderType.SALE || orderDTO.getOrderType() == OrderType.BUY_RETURN) {
                 customer.setBalance(customer.getBalance().add(netChange));
             } else {
                 customer.setBalance(customer.getBalance().subtract(netChange));

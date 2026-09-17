@@ -2,6 +2,7 @@ package com.baddary.salesAPI.service;
 
 import com.baddary.salesAPI.dto.OrderDTO;
 import com.baddary.salesAPI.dto.OrderProductDTO;
+import com.baddary.salesAPI.dto.OrderSearchDTO;
 import com.baddary.salesAPI.entity.*;
 import com.baddary.salesAPI.enums.OrderType;
 import com.baddary.salesAPI.mapper.OrderMapper;
@@ -11,7 +12,7 @@ import com.baddary.salesAPI.repository.OrderRepository;
 import com.baddary.salesAPI.repository.ProductRepository;
 import com.baddary.salesAPI.repository.UserRepository;
 import com.baddary.salesAPI.specification.OrderSpecifications;
-
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,19 +45,35 @@ public class OrderService {
         this.cashService = cashService;
     }
 
+    private Order validateReturnOrder(OrderDTO orderDTO) {
+        Order originalOrder = null;
+        if (orderDTO.getOrderType() == OrderType.BUY_RETURN || orderDTO.getOrderType() == OrderType.SALE_RETURN) {
+            Long originalOrderId = orderDTO.getOriginalOrderId();
+            if (originalOrderId == null) {
+                throw new RuntimeException("Return must reference the original order");
+            } else {
+                originalOrder = orderRepository.findById(originalOrderId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Original order " + originalOrderId));
+                // check the quantity
+                                 
+            }
+        }
+        return originalOrder;
+    }
 
     @Transactional
     public OrderDTO addOrder(OrderDTO orderDTO) {
         Customer customer = customerRepository.findById(orderDTO.getCustomerId()).orElseThrow();
         User user = userRepository.findById(orderDTO.getUserId()).orElseThrow();
-        Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer);
+        Order originalOrder = validateReturnOrder(orderDTO);
+        Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer, originalOrder);
         for (OrderProductDTO orderProductDTO : orderDTO.getOrderProductDTOSet()) {
             Product product = productRepository.findById(orderProductDTO.getProductId()).orElseThrow();
             OrderProduct opEntity = OrderProductMapper.toEntity(orderProductDTO, product, orderEntity);
             orderEntity.addOrderProduct(opEntity);
         }
         Order saved = orderRepository.save(orderEntity);
-        if (orderEntity.getOrderType() == OrderType.BUY) {
+        if (orderEntity.getOrderType() == OrderType.BUY || orderEntity.getOrderType() == OrderType.SALE_RETURN) {
             // buy means increase stock and decrease cash
             for (OrderProduct op : orderEntity.getOrderProductSet()) {
                 stockService.increaseStock(op.getProduct().getId(),
@@ -80,28 +97,30 @@ public class OrderService {
 
     }
 
-    public List<OrderDTO> searchOrders(String customerName, String productName,
-            String userName, LocalDate fromDate,
-            LocalDate toDate, OrderType orderType) {
+    // public List<OrderDTO> searchOrders(String customerName, String productName,
+    // String userName, LocalDate fromDate,
+    // LocalDate toDate, OrderType orderType) {
+    // Specification<Order> spec = Specification
+    // .where(OrderSpecifications.customerNameContains(customerName))
+    // .and(OrderSpecifications.productNameContains(productName))
+    // .and(OrderSpecifications.userNameContains(userName))
+    // .and(OrderSpecifications.dateBetween(fromDate, toDate))
+    // .and(OrderSpecifications.orderTypeEquals(orderType));
+    // List<Order> orders = orderRepository.findAll(spec);
+    // ;
+
+    // return orders.stream().map(OrderMapper::toDTO).toList();
+    // }
+
+    public List<OrderDTO> searchOrders(OrderSearchDTO dto) {
+
         Specification<Order> spec = Specification
-                .where(OrderSpecifications.customerNameContains(customerName))
-                .and(OrderSpecifications.productNameContains(productName))
-                .and(OrderSpecifications.userNameContains(userName))
-                .and(OrderSpecifications.dateBetween(fromDate, toDate))
-                .and(OrderSpecifications.orderTypeEquals(orderType));
-        List<Order> orders = orderRepository.findAll(spec);
-        ;
-
-        return orders.stream().map(OrderMapper::toDTO).toList();
-    }
-
-    public List<OrderDTO> searchOrders(Long customerId, LocalDate fromDate,
-            LocalDate toDate, OrderType orderType) {
-
-        Specification<Order> spec = Specification
-                .where(OrderSpecifications.customerIdEqual(customerId))
-                .and(OrderSpecifications.dateBetween(fromDate, toDate))
-                .and(OrderSpecifications.orderTypeEquals(orderType));
+                .where(OrderSpecifications.orderIdEqual(dto.getOrderId()))
+                .and(OrderSpecifications.userIdEquals(dto.getUserId()))
+                .and(OrderSpecifications.customerIdEqual(dto.getCustomerId()))
+                .and(OrderSpecifications.productBarcodeEquals(dto.getProductBarcode()))
+                .and(OrderSpecifications.dateBetween(dto.getFromDate(), dto.getToDate()))
+                .and(OrderSpecifications.orderTypeEquals(dto.getOrderType()));
         List<Order> orders = orderRepository.findAll(spec);
         return orders.stream().map(OrderMapper::toDTO).toList();
     }

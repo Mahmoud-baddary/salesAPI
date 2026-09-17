@@ -4,9 +4,11 @@ import java.time.LocalDate;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.enums.OrderType;
 
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Join;
+import com.baddary.salesAPI.entity.*;
 
 public class OrderSpecifications {
     public static Specification<Order> customerNameContains(String name) {
@@ -26,6 +28,24 @@ public class OrderSpecifications {
             var join = root.join("orderProductSet");
             return cb.like(cb.lower(join.get("product").get("name")),
                     "%" + productName.toLowerCase() + "%");
+        };
+    }
+
+    public static Specification<Order> productBarcodeEquals(String barcode) {
+        return (root, query, cb) -> {
+            if (barcode == null || barcode.isBlank()) {
+                return cb.conjunction();
+            }
+            Join<Order, OrderProduct> orderProductJoin = root
+                    .join("orderProductSet", JoinType.LEFT);
+            Join<OrderProduct, Product> productJoin = orderProductJoin
+                    .join("product", JoinType.LEFT);
+            Join<Product, Barcode> barcodeJoin = productJoin
+                    .join("barcodes", JoinType.LEFT);
+            return cb.equal(
+                    cb.lower(barcodeJoin.get("barcodeTxt")),
+                    barcode.toLowerCase().trim());
+
         };
     }
 
@@ -65,12 +85,30 @@ public class OrderSpecifications {
         };
     }
 
-    public static Specification<Order> customerIdEqual(Long customerId){
+    public static Specification<Order> customerIdEqual(Long customerId) {
         return (root, query, cb) -> {
             if (customerId == null) {
                 return cb.conjunction();
             }
             return cb.equal(root.get("customer").get("id"), customerId);
+        };
+    }
+
+    public static Specification<Order> userIdEquals(Long userId) {
+        return (root, query, cb) -> {
+            if (userId == null) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("user").get("id"), userId);
+        };
+    }
+
+    public static Specification<Order> orderIdEqual(Long orderId) {
+        return (root, query, cb) -> {
+            if (orderId == null) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("id"), orderId);
         };
     }
 }
