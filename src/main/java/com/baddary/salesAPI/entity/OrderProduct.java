@@ -44,6 +44,8 @@ public class OrderProduct {
         return priceSU;
     }
 
+    
+
     public void setPriceSU() {
         this.priceSU = calculatePriceSU(this.price);
     }

@@ -43,7 +43,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // 3. Generate a token (for now, a simple UUID; replace with JWT later)
         String token = jwtUtil.generateToken(user.getName(), user.getRole().name());
 
         // 4. Build response DTO

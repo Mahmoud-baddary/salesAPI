@@ -1,15 +1,18 @@
 package com.baddary.salesAPI.mapper;
 
+import java.util.Optional;
 
 import com.baddary.salesAPI.dto.OrderProductDTO;
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.entity.OrderProduct;
 import com.baddary.salesAPI.entity.Product;
+import com.baddary.salesAPI.entity.Stock;
 
 public class OrderProductMapper {
-    private OrderProductMapper(){}
+    private OrderProductMapper() {
+    }
 
-    public static OrderProduct toEntity(OrderProductDTO dto, Product p, Order order){
+    public static OrderProduct toEntity(OrderProductDTO dto, Product p, Order order) {
         OrderProduct entity = new OrderProduct();
         entity.setProduct(p);
         entity.setOrder(order);
@@ -24,7 +27,8 @@ public class OrderProductMapper {
         entity.setPriceSU();
         return entity;
     }
-    public static OrderProductDTO toDTO(OrderProduct entity){
+
+    public static OrderProductDTO toDTO(OrderProduct entity) {
         OrderProductDTO dto = new OrderProductDTO();
         dto.setProductId(entity.getProduct().getId());
         dto.setOrderId(entity.getOrder().getId());
@@ -35,7 +39,9 @@ public class OrderProductMapper {
         dto.setNote(entity.getNote());
         dto.setDiscount(entity.getDiscount());
         dto.setBatch(entity.getBatch());
-        dto.setProductName(entity.getProduct().getName());
+        dto.setProductSummaryDTO(ProductMapper.toSummaryDTO(entity.getProduct()));
+        dto.setPriceSU(entity.getPriceSU().doubleValue());
+        dto.setQuantitySU(entity.getQuantitySU());
         return dto;
 
     }

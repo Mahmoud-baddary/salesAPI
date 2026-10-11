@@ -45,17 +45,28 @@ public class OrderService {
         this.cashService = cashService;
     }
 
-    private Order validateReturnOrder(OrderDTO orderDTO) {
+    private Order validateReturnOrder(OrderDTO orderReturnDTO) {
         Order originalOrder = null;
-        if (orderDTO.getOrderType() == OrderType.BUY_RETURN || orderDTO.getOrderType() == OrderType.SALE_RETURN) {
-            Long originalOrderId = orderDTO.getOriginalOrderId();
+        if (orderReturnDTO.getOrderType() == OrderType.BUY_RETURN
+                || orderReturnDTO.getOrderType() == OrderType.SALE_RETURN) {
+            Long originalOrderId = orderReturnDTO.getOriginalOrderId();
             if (originalOrderId == null) {
                 throw new RuntimeException("Return must reference the original order");
             } else {
                 originalOrder = orderRepository.findById(originalOrderId)
                         .orElseThrow(() -> new ResourceNotFoundException("Original order " + originalOrderId));
                 // check the quantity
-                                 
+                for (OrderProductDTO returnItem : orderReturnDTO.getOrderProductDTOSet()) {
+                    OrderProduct originalItem = originalOrder.getOrderProductSet().stream()
+                            .filter(op -> op.getProduct().getId() == returnItem.getProductId()
+                                    && op.getExpireDate().equals(returnItem.getExpireDate()))
+                            .findAny()
+                            .orElseThrow(() -> new RuntimeException("Product is not in the original order"));
+                    if (returnItem.getQuantitySU() > originalItem.getQuantitySU()) {
+                        throw new RuntimeException("Can't return more than purchased");
+                    }
+                }
+
             }
         }
         return originalOrder;

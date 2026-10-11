@@ -27,6 +27,8 @@ public class Product {
     private Set<OrderProduct> orderProductSet = new HashSet<>();
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Barcode> barcodes = new HashSet<>();
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Stock> stocks = new HashSet<>();
 
     public Product() {
     }
@@ -115,5 +117,12 @@ public class Product {
     @Override
     public String toString() {
         return this.name;
+    }
+
+
+
+
+    public Set<Stock> getStocks() {
+        return stocks;
     }
 }

@@ -1,6 +1,7 @@
 package com.baddary.salesAPI.mapper;
 
 import com.baddary.salesAPI.dto.ProductDTO;
+import com.baddary.salesAPI.dto.ProductSummaryDTO;
 import com.baddary.salesAPI.entity.Barcode;
 import com.baddary.salesAPI.entity.Product;
 
@@ -18,6 +19,18 @@ public class ProductMapper {
         dto.setMediumUnit(entity.getMediumUnit());
         dto.setGreatestUnit(entity.getGreatestUnit());
         entity.getBarcodes().stream().map(BarcodeMapper::toDTO).forEach(dto.getBarcodeDTOSet()::add);
+        return dto;
+    }
+
+    public static ProductSummaryDTO toSummaryDTO(Product entity){
+        ProductSummaryDTO dto = new ProductSummaryDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setGreatestUnit(entity.getGreatestUnit());
+        dto.setMediumUnit(entity.getMediumUnit());
+        dto.setSmallestUnit(entity.getSmallestUnit());
+        dto.setMediumUnitAmount(entity.getMediumUnitAmount());
+        dto.setSmallestUnitAmount(entity.getSmallestUnitAmount());
         return dto;
     }
 
