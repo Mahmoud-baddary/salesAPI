@@ -1,12 +1,10 @@
 package com.baddary.salesAPI.mapper;
 
-import java.util.Optional;
 
 import com.baddary.salesAPI.dto.OrderProductDTO;
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.entity.OrderProduct;
 import com.baddary.salesAPI.entity.Product;
-import com.baddary.salesAPI.entity.Stock;
 
 public class OrderProductMapper {
     private OrderProductMapper() {
