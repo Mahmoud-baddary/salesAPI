@@ -22,6 +22,7 @@ public class ProductService {
         this.entityManager = entityManager;
     }
 
+    @Transactional
     public List<ProductDTO> searchByName(String name) {
         List<Product> products = productRepository.findByNameIgnoreCase(name);
         return products.stream().map(ProductMapper::toDTO).toList();
@@ -44,16 +45,19 @@ public class ProductService {
         return ProductMapper.toDTO(saved);
     }
 
+    @Transactional
     public List<ProductDTO> findAll() {
         List<Product> all = productRepository.findAll();
         return all.stream().map(ProductMapper::toDTO).toList();
     }
 
+    @Transactional
     public Optional<ProductDTO> findById(Long id) {
         Optional<Product> optionalProduct = productRepository.findById(id);
         return optionalProduct.map(ProductMapper::toDTO);
     }
 
+    @Transactional
     public Optional<ProductDTO> findByName(String name) {
         Optional<Product> product = productRepository.findByName(name);
         return product.map(ProductMapper::toDTO);

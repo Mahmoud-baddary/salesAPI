@@ -15,7 +15,6 @@ import com.baddary.salesAPI.specification.OrderSpecifications;
 import com.baddary.salesAPI.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -129,6 +128,7 @@ public class OrderService {
     // return orders.stream().map(OrderMapper::toDTO).toList();
     // }
 
+    @Transactional
     public List<OrderDTO> searchOrders(OrderSearchDTO dto) {
 
         Specification<Order> spec = Specification
@@ -142,6 +142,7 @@ public class OrderService {
         return orders.stream().map(OrderMapper::toDTO).toList();
     }
 
+    @Transactional 
     public Optional<OrderDTO> findById(Long id) {
         return orderRepository.findById(id).map(OrderMapper::toDTO);
     }

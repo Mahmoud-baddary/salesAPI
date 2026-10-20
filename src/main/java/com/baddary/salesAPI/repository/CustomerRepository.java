@@ -33,7 +33,7 @@ public interface CustomerRepository extends CrudRepository<Customer, Long> {
     @Query("SELECT c FROM Customer c join fetch c.phones p where p.phoneNum = :phoneNum")
     Optional<Customer> findByPhone(String phoneNum);
 
-    @Query("SELECT c FROM Customer c WHERE " +
+    @Query("SELECT c FROM Customer c left join fetch c.phones WHERE " +
             "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
             "AND (" +
             "   (:balanceStatus = 'ALL') OR " +

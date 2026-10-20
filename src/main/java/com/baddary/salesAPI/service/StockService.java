@@ -69,10 +69,12 @@ public class StockService {
         return stockRepository.findByProductId(productId).stream().map(StockMapper::toDTO).toList();
     }
 
+    @Transactional
     public Optional<StockDTO> findStock(Long productId, LocalDate expire) {
         return stockRepository.findByProductIdAndExpire(productId, expire).map(StockMapper::toDTO);
     }
 
+    @Transactional 
     public List<StockDTO> findStocks(String productName) {
         return stockRepository.findByProductName(productName.trim()).stream().map(StockMapper::toDTO).toList();
     }

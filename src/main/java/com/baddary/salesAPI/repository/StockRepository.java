@@ -14,16 +14,23 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StockRepository extends CrudRepository<Stock, Long> {
-    Optional<Stock> findByProductIdAndExpire(Long productId, LocalDate expire);
-    List<Stock> findByProductId(Long productId);
-    @Query("""
-            SELECT s FROM Stock s join fetch s.product p 
-            where lower(p.name) like lower(concat('%', :name, '%'))
-            """)
-    List<Stock> findByProductName(String name);
+        @Query("""
+                        SELECT s FROM Stock s join fetch s.product p
+                        where p.id = :productId and s.expire = :expire
+                        """)
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT s FROM Stock s WHERE s.product.id = :productId AND s.expire = :expire")
-    Optional<Stock> findStockForUpdate(@Param("productId") Long productId,
-                                       @Param("expire") LocalDate expire);
+        Optional<Stock> findByProductIdAndExpire(Long productId, LocalDate expire);
+
+        List<Stock> findByProductId(Long productId);
+
+        @Query("""
+                        SELECT s FROM Stock s join fetch s.product p
+                        where lower(p.name) like lower(concat('%', :name, '%'))
+                        """)
+        List<Stock> findByProductName(String name);
+
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("SELECT s FROM Stock s WHERE s.product.id = :productId AND s.expire = :expire")
+        Optional<Stock> findStockForUpdate(@Param("productId") Long productId,
+                        @Param("expire") LocalDate expire);
 }

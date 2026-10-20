@@ -30,12 +30,14 @@ public class CustomerService {
         this.cashService = cashService;
     }
 
+    @Transactional
     public List<CustomerDTO> findAll() {
         List<Customer> customers = customerRepository.findAll();
         List<CustomerDTO> dtos = customers.stream().map(CustomerMapper::toDTO).toList();
         return dtos;
     }
 
+    @Transactional
     public List<CustomerDTO> searchByName(String name) {
         List<Customer> customers = customerRepository.searchByName(name);
         List<CustomerDTO> dtos = customers.stream().map(CustomerMapper::toDTO).toList();
@@ -123,21 +125,25 @@ public class CustomerService {
         return customerRepository.findNameBy();
     }
 
+    @Transactional
     public Optional<CustomerDTO> findByName(String name) {
         Optional<Customer> customer = customerRepository.findByName(name);
         return customer.map(CustomerMapper::toDTO);
     }
 
+    @Transactional
     public Optional<CustomerDTO> findById(Long customerId) {
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         return optionalCustomer.map(CustomerMapper::toDTO);
     }
 
+    @Transactional
     public Optional<CustomerDTO> findByPhone(String phoneNum) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNum);
         return optionalCustomer.map(CustomerMapper::toDTO);
     }
 
+    @Transactional
     public List<CustomerDTO> searchByNameAndBalanceStatus(String name, String balanceStatus){
         List<Customer> customers = customerRepository.searchByNameAndBalanceStatus(name, balanceStatus);
         return customers.stream().map(CustomerMapper::toDTO).toList();
