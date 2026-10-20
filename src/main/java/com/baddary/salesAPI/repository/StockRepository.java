@@ -30,7 +30,7 @@ public interface StockRepository extends CrudRepository<Stock, Long> {
         List<Stock> findByProductName(String name);
 
         @Lock(LockModeType.PESSIMISTIC_WRITE)
-        @Query("SELECT s FROM Stock s WHERE s.product.id = :productId AND s.expire = :expire")
+        @Query("SELECT s FROM Stock s join fetch s.product p WHERE p.id = :productId AND s.expire = :expire")
         Optional<Stock> findStockForUpdate(@Param("productId") Long productId,
                         @Param("expire") LocalDate expire);
 }
