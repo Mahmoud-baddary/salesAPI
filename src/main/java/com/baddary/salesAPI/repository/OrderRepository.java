@@ -3,10 +3,13 @@ package com.baddary.salesAPI.repository;
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.enums.OrderType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -69,7 +72,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
                             c.id               AS customer_id,
                             c.name             AS customer_name,
-                            
+
 
                             u.id               AS user_id,
                             u.name             AS user_name,
@@ -107,4 +110,28 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
                         WHERE o.id = :id
                         """, nativeQuery = true)
         List<Object[]> findOrderDetailsRaw(@Param("id") Long id);
+
+        @Query("""
+                            SELECT COALESCE(SUM(op.quantitySU), 0)
+                            FROM Order o
+                            JOIN o.orderProductSet op
+                            WHERE o.originalOrder.id = :originalOrderId                              AND op.product.id = :productId
+                              AND op.expireDate = :expireDate
+                              AND op.batch = :batch
+                              AND o.orderType = :returnType
+                        """)
+        BigDecimal sumReturnedQuantitySU(@Param("originalOrderId") Long originalOrderId,
+                        @Param("productId") Long productId,
+                        @Param("expireDate") LocalDate expireDate,
+                        @Param("batch") String batch,
+                        @Param("returnType") OrderType returnType);
+
+        @Override
+        @EntityGraph(attributePaths = {
+                        "customer",
+                        "user",
+                        "orderProductSet",
+                        "orderProductSet.product"
+        })
+        List<Order> findAll(Specification<Order> spec);
 }

@@ -15,7 +15,7 @@ public class StockDTO {
     @NotNull(message = "expire date is required")
     private LocalDate expire;
     @PositiveOrZero(message = "quantitySU must be equal or greater than zero")
-    private double quantitySU;
+    private BigDecimal quantitySU;
     @NotBlank(message = "batch is required")
     private String batch;
     @Positive(message = "priceSU must be greater than zero")
@@ -45,11 +45,11 @@ public class StockDTO {
         this.expire = expire;
     }
 
-    public double getQuantitySU() {
+    public BigDecimal getQuantitySU() {
         return quantitySU;
     }
 
-    public void setQuantitySU(double quantitySU) {
+    public void setQuantitySU(BigDecimal quantitySU) {
         this.quantitySU = quantitySU;
     }
 

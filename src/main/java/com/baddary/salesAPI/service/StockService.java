@@ -27,7 +27,7 @@ public class StockService {
         this.productRepository = productRepository;
     }
 
-    public void increaseStock(Long productId, LocalDate expire, String batch, double quantitySU, BigDecimal priceSU) {
+    public void increaseStock(Long productId, LocalDate expire, String batch, BigDecimal quantitySU, BigDecimal priceSU) {
         Product product = productRepository.findById(productId)
         .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
         Stock stock = stockRepository.findByProductIdAndExpire(productId, expire)
@@ -36,29 +36,29 @@ public class StockService {
                     s.setProduct(product);
                     s.setExpire(expire);
                     s.setBatch(batch);
-                    s.setQuantitySU(0);
+                    s.setQuantitySU(BigDecimal.ZERO);
                     s.setPriceSU(priceSU);
                     return s;
                 });
-        stock.setQuantitySU(stock.getQuantitySU() + quantitySU);
+        stock.setQuantitySU(stock.getQuantitySU().add(quantitySU));
         stockRepository.save(stock);
     }
 
     @Transactional
-    public void decreaseStock(Long productId, LocalDate expire, double quantitySU) {
+    public void decreaseStock(Long productId, LocalDate expire, BigDecimal quantitySU) {
         Stock stock = stockRepository.findStockForUpdate(productId, expire)
                 .orElseThrow(() -> new ResourceNotFoundException("Stock not found"));
         // 2. Check if we have enough stock (now guaranteed to be the latest value)
-        if (stock.getQuantitySU() < quantitySU) {
+        if (stock.getQuantitySU().compareTo(quantitySU) < 0) {
             throw new RuntimeException(
                     "Insufficient stock! Available: " + stock.getQuantitySU() + ", requested: " + quantitySU);
         }
         // 3. Decrease the quantity
-        double newQuantity = stock.getQuantitySU() - quantitySU;
+        BigDecimal newQuantity = stock.getQuantitySU().subtract(quantitySU);
         stock.setQuantitySU(newQuantity);
 
         // 4. Save or delete
-        if (newQuantity == 0) {
+        if (newQuantity.compareTo(BigDecimal.ZERO) == 0) {
             stockRepository.delete(stock); 
         } else {
             stockRepository.save(stock);

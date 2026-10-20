@@ -132,7 +132,7 @@ public class OrderDTO {
     public BigDecimal calculateTotalPrice() {
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (OrderProductDTO item : orderProductDTOSet) {
-            BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
+            BigDecimal quantity = item.getQuantity();
             BigDecimal price = item.getPrice();
             BigDecimal itemDiscount = item.getDiscount();
             totalPrice = totalPrice.add((quantity.multiply(price).multiply(

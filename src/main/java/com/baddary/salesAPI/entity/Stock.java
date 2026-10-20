@@ -15,7 +15,8 @@ public class Stock {
     @JoinColumn(name = "product_id")
     private Product product;
     private LocalDate expire;
-    private double quantitySU;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal quantitySU;
     private String batch;
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal priceSU;
@@ -63,11 +64,11 @@ public class Stock {
         this.expire = expire;
     }
 
-    public double getQuantitySU() {
+    public BigDecimal getQuantitySU() {
         return quantitySU;
     }
 
-    public void setQuantitySU(double quantitySU) {
+    public void setQuantitySU(BigDecimal quantitySU) {
         this.quantitySU = quantitySU;
     }
 }

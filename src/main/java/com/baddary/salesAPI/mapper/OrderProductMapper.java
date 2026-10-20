@@ -21,8 +21,8 @@ public class OrderProductMapper {
         entity.setNote(dto.getNote());
         entity.setDiscount(dto.getDiscount());
         entity.setBatch(dto.getBatch());
-        entity.setQuantitySU();
-        entity.setPriceSU();
+        entity.setQuantitySU(dto.getQuantitySU());
+        entity.setPriceSU(dto.getPriceSU());
         return entity;
     }
 
@@ -38,7 +38,7 @@ public class OrderProductMapper {
         dto.setDiscount(entity.getDiscount());
         dto.setBatch(entity.getBatch());
         dto.setProductSummaryDTO(ProductMapper.toSummaryDTO(entity.getProduct()));
-        dto.setPriceSU(entity.getPriceSU().doubleValue());
+        dto.setPriceSU(entity.getPriceSU());
         dto.setQuantitySU(entity.getQuantitySU());
         return dto;
 

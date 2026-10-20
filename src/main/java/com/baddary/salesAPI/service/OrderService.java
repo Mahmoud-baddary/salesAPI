@@ -59,10 +59,14 @@ public class OrderService {
                 for (OrderProductDTO returnItem : orderReturnDTO.getOrderProductDTOSet()) {
                     OrderProduct originalItem = originalOrder.getOrderProductSet().stream()
                             .filter(op -> op.getProduct().getId() == returnItem.getProductId()
-                                    && op.getExpireDate().equals(returnItem.getExpireDate()))
+                                    && op.getExpireDate().equals(returnItem.getExpireDate())
+                                    && op.getBatch().equals(returnItem.getBatch()))
                             .findAny()
                             .orElseThrow(() -> new RuntimeException("Product is not in the original order"));
-                    if (returnItem.getQuantitySU() > originalItem.getQuantitySU()) {
+                    if (returnItem.getQuantitySU().compareTo(originalItem.getQuantitySU()
+                            .subtract(orderRepository.sumReturnedQuantitySU(originalOrderId, returnItem.getProductId(),
+                                    returnItem.getExpireDate(), returnItem.getBatch(),
+                                    orderReturnDTO.getOrderType()))) > 0) {
                         throw new RuntimeException("Can't return more than purchased");
                     }
                 }
@@ -74,8 +78,10 @@ public class OrderService {
 
     @Transactional
     public OrderDTO addOrder(OrderDTO orderDTO) {
-        Customer customer = customerRepository.findById(orderDTO.getCustomerId()).orElseThrow();
-        User user = userRepository.findById(orderDTO.getUserId()).orElseThrow();
+        Customer customer = customerRepository.findById(orderDTO.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        User user = userRepository.findById(orderDTO.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Order originalOrder = validateReturnOrder(orderDTO);
         Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer, originalOrder);
         for (OrderProductDTO orderProductDTO : orderDTO.getOrderProductDTOSet()) {

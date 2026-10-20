@@ -16,7 +16,7 @@ public class OrderProductDTO {
     private String unit;
     private String note;
     @Positive(message = "quantity must be greater than zero")
-    private double quantity;
+    private BigDecimal quantity;
     @Positive(message = "price must be positive number")
     private BigDecimal price;
     private BigDecimal discount = BigDecimal.ZERO;
@@ -25,9 +25,9 @@ public class OrderProductDTO {
     private Long orderId;
     private ProductSummaryDTO productSummaryDTO;
     @Positive (message = "Quantity of smallest unit must be a positive number")
-    private double quantitySU;
-    private double stockSU;
-    private double priceSU;
+    private BigDecimal quantitySU;
+    @Positive (message = "Price of smallest unit must be a positive number")
+    private BigDecimal priceSU;
     
 
     public Long getOrderId() {
@@ -72,11 +72,11 @@ public class OrderProductDTO {
         this.note = note;
     }
 
-    public double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(double quantity) {
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
@@ -112,29 +112,21 @@ public class OrderProductDTO {
         this.productSummaryDTO = productSummaryDTO;
     }
 
-    public double getQuantitySU() {
+    public BigDecimal getQuantitySU() {
         return quantitySU;
     }
 
-    public void setQuantitySU(double quantitySU) {
+    public void setQuantitySU(BigDecimal quantitySU) {
         this.quantitySU = quantitySU;
     }
 
-    public double getStockSU() {
-        return stockSU;
-    }
 
-    public void setStockSU(double stockSU) {
-        this.stockSU = stockSU;
-    }
-
-
-    public double getPriceSU() {
+    public BigDecimal getPriceSU() {
         return priceSU;
     }
 
 
-    public void setPriceSU(double priceSU) {
+    public void setPriceSU(BigDecimal priceSU) {
         this.priceSU = priceSU;
     }
 }
