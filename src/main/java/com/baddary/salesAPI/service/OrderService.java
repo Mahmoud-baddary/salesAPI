@@ -77,11 +77,11 @@ public class OrderService {
 
     @Transactional
     public OrderDTO addOrder(OrderDTO orderDTO) {
+        Order originalOrder = validateReturnOrder(orderDTO);
         Customer customer = customerRepository.findById(orderDTO.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         User user = userRepository.findById(orderDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Order originalOrder = validateReturnOrder(orderDTO);
         Order orderEntity = OrderMapper.toEntity(orderDTO, user, customer, originalOrder);
         for (OrderProductDTO orderProductDTO : orderDTO.getOrderProductDTOSet()) {
             Product product = productRepository.findById(orderProductDTO.getProductId()).orElseThrow();
