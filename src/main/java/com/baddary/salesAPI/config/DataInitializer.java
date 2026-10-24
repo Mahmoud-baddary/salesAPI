@@ -8,6 +8,8 @@ import com.baddary.salesAPI.repository.SafeRepository;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 
@@ -16,6 +18,7 @@ public class DataInitializer {
 
     private final SafeRepository safeRepository;
     private final CustomerRepository customerRepository;
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     public DataInitializer(SafeRepository safeRepository, CustomerRepository customerRepository) {
         this.safeRepository = safeRepository;
@@ -29,23 +32,23 @@ public class DataInitializer {
             Safe safe = new Safe();
             safe.setTotalAmount(BigDecimal.ZERO);
             safeRepository.save(safe);
-            System.out.println("Safe row created with balance 0.00");
+            log.info("Safe row created with balance 0.00");
         } else {
-            System.out.println("ℹSafe already exists.");
+            log.info("ℹSafe already exists.");
         }
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void initializeGuest() {
         // Check if Customer table is empty
-        if (customerRepository.count() == 0) {
+        if (customerRepository.findByName("GUEST").isEmpty()) {
             Customer customer = new Customer();
             customer.setName("guest");
             customer.addPhone(new Phone("0000"));
             customerRepository.save(customer);
-            System.out.println("Guest was created now");
+            log.info("Guest was created now");
         } else {
-            System.out.println("guest already exists.");
+            log.info("guest already exists.");
         }
     }
 }
