@@ -1,5 +1,6 @@
 package com.baddary.salesAPI.controller;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.mindrot.jbcrypt.BCrypt;
@@ -16,11 +17,15 @@ import com.baddary.salesAPI.dto.UserDTO;
 import com.baddary.salesAPI.service.UserService;
 import com.baddary.salesAPI.util.JwtUtil;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private static final String DUMMY_BCRYPT_HASH = "$2a$10$7EqJtq98hPqEX7fNZaFWoO.HdwvfS0G1gXvE8j7z7v7v7v7v7v7v7";
+
 
     public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
@@ -28,30 +33,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
-        // 1. Find user by username (case-insensitive)
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequestDTO loginRequest) {
+        // Find user by username (case-insensitive)
         Optional<UserDTO> userOpt = userService.findByNameIgnoreCase(loginRequest.getUsername());
-        if (userOpt.isEmpty()) {
-            // User not found – return 401 (Unauthorized)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        String storedPassword = userOpt.map(UserDTO::getPassword).orElse(DUMMY_BCRYPT_HASH);
+        boolean passwordMatches = BCrypt.checkpw(loginRequest.getPassword(), storedPassword);
 
+        if (userOpt.isEmpty() || !passwordMatches) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
+        }
         UserDTO user = userOpt.get();
-
-        // 2. Verify password (raw from request vs stored hash)
-        if (!BCrypt.checkpw(loginRequest.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         String token = jwtUtil.generateToken(user.getName(), user.getRole().name());
 
-        // 4. Build response DTO
         LoginResponseDTO response = new LoginResponseDTO();
         response.setUserId(user.getId());
         response.setUserName(user.getName());
         response.setToken(token);
 
-        // 5. Return 200 OK with the token and user info
         return ResponseEntity.ok(response);
     }
 }
