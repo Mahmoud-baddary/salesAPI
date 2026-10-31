@@ -1,9 +1,12 @@
 package com.baddary.salesAPI.controller;
 
 import com.baddary.salesAPI.dto.UserDTO;
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.service.UserService;
 
 import jakarta.validation.Valid;
+
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +24,14 @@ public class UserController {
 
     @GetMapping("/search")
     public ResponseEntity<UserDTO> findByNameIgnoreCase(@RequestParam String name) {
-        return userService.findByNameIgnoreCase(name)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        UserDTO userDTO = userService.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new ResourceNotFoundException("User Name : ", name));
+        return ResponseEntity.ok(userDTO);
     }
 
     @GetMapping("/count")
-    public long count() {
-        return userService.count();
+    public ResponseEntity<Long> count() {
+        return ResponseEntity.ok(userService.count());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -38,9 +42,9 @@ public class UserController {
     }
 
     @PostMapping("/first")
-    public ResponseEntity<UserDTO> addUserFirst(@RequestBody @Valid UserDTO userDTO) {
+    public ResponseEntity<?> addUserFirst(@RequestBody @Valid UserDTO userDTO) {
         if (userService.count() > 0) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Users already exist"));
         }
         UserDTO dto = userService.addUser(userDTO);
         return ResponseEntity.status(201).body(dto);

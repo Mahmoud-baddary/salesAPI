@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.service.SafeService;
 
 @RestController
@@ -22,7 +23,9 @@ public class SafeController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/total")
     public ResponseEntity<BigDecimal> totalAmount() {
-        return safeService.totalAmount().map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        BigDecimal totalAmount = safeService.totalAmount().orElseThrow(
+            ()-> new ResourceNotFoundException("Safe is not registered yet")
+        );
+        return ResponseEntity.ok(totalAmount);
     }
 }

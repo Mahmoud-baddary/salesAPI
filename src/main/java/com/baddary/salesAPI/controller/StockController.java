@@ -1,6 +1,7 @@
 package com.baddary.salesAPI.controller;
 
 import com.baddary.salesAPI.dto.StockDTO;
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.service.StockService;
 
 import org.springframework.http.ResponseEntity;
@@ -18,19 +19,21 @@ public class StockController {
         this.stockService = stockService;
     }
 
-    @GetMapping("/{productId}")
-    public List<StockDTO> findStocks(@PathVariable long productId) {
-        return stockService.findStocks(productId);
+    @GetMapping("/id/{productId}")
+    public ResponseEntity<List<StockDTO>> findStocks(@PathVariable long productId) {
+        return ResponseEntity.ok(stockService.findStocks(productId));
     }
 
     @GetMapping("/by-product-expire")
     public ResponseEntity<StockDTO> findStock(@RequestParam long productId, @RequestParam LocalDate expire) {
-        return stockService.findStock(productId, expire)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        StockDTO stockDTO = stockService.findStock(productId, expire)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Stock not found for Product ID: " + productId + " and Expire Date: " + expire));
+        return ResponseEntity.ok(stockDTO);
     }
+
     @GetMapping("/by-product-name")
-    public List<StockDTO> findStocks(@RequestParam String productName){
-        return stockService.findStocks(productName);
+    public ResponseEntity<List<StockDTO>> findStocksByProductName(@RequestParam String productName) {
+        return ResponseEntity.ok(stockService.findStocks(productName));
     }
 }

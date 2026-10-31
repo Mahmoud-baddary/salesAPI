@@ -1,9 +1,11 @@
 package com.baddary.salesAPI.controller;
 
 import com.baddary.salesAPI.dto.ProductDTO;
+import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,16 +20,18 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public List<ProductDTO> searchByName(@RequestParam String name) {
-        return productService.searchByName(name);
+    public ResponseEntity<List<ProductDTO>> searchByName(@RequestParam String name) {
+        return ResponseEntity.ok(productService.searchByName(name));
     }
 
+    @PreAuthorize("hasRole('ADMIN')") // Only admins can access this endpoint
     @PutMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable long id, @RequestBody @Valid ProductDTO dto) {
         ProductDTO productDTO = productService.updateProduct(id, dto);
         return ResponseEntity.status(200).body(productDTO);
     }
 
+    @PreAuthorize("hasRole('ADMIN')") // Only admins can access this endpoint
     @PostMapping
     public ResponseEntity<ProductDTO> addProduct(@RequestBody @Valid ProductDTO dto) {
         ProductDTO productDTO = productService.addProduct(dto);
@@ -35,20 +39,22 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductDTO> findAll() {
-        return productService.findAll();
+    public ResponseEntity<List<ProductDTO>> findAll() {
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> findById(@PathVariable long id) {
-        return productService.findById(id)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        ProductDTO product = productService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product ID : ", id));
+        return ResponseEntity.ok(product);
     }
 
     @GetMapping("/by-name")
     public ResponseEntity<ProductDTO> findByName(@RequestParam String name) {
-        return productService.findByName(name)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        ProductDTO product = productService.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Name : ", name));
+        return ResponseEntity.ok(product);
     }
 
 }
