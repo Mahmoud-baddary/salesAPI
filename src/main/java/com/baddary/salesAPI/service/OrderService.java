@@ -18,6 +18,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,7 +133,7 @@ public class OrderService {
     // }
 
     @Transactional
-    public List<OrderDTO> searchOrders(OrderSearchDTO dto) {
+    public Page<OrderDTO> searchOrders(OrderSearchDTO dto) {
 
         Specification<Order> spec = Specification
                 .where(OrderSpecifications.orderIdEqual(dto.getOrderId()))
@@ -138,11 +142,15 @@ public class OrderService {
                 .and(OrderSpecifications.productBarcodeEquals(dto.getProductBarcode()))
                 .and(OrderSpecifications.dateBetween(dto.getFromDate(), dto.getToDate()))
                 .and(OrderSpecifications.orderTypeEquals(dto.getOrderType()));
-        List<Order> orders = orderRepository.findAll(spec);
-        return orders.stream().map(OrderMapper::toDTO).toList();
+        Pageable pageable = PageRequest.of(
+                dto.getPage(),
+                dto.getSize(),
+                Sort.by("date").descending());
+        Page<Order> orderPage = orderRepository.findAll(spec, pageable);
+        return orderPage.map(OrderMapper::toDTO);
     }
 
-    @Transactional 
+    @Transactional
     public Optional<OrderDTO> findById(Long id) {
         return orderRepository.findById(id).map(OrderMapper::toDTO);
     }

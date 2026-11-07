@@ -12,7 +12,7 @@ public class StockMapper {
         entity.setPriceSU(dto.getPriceSU());
         entity.setQuantitySU(dto.getQuantitySU());
         entity.setId(dto.getId());
-        entity.setExpire(dto.getExpire());
+        entity.setExpire(dto.getExpireDate());
         return entity;
     }
 
@@ -22,7 +22,7 @@ public class StockMapper {
         dto.setPriceSU(entity.getPriceSU());
         dto.setQuantitySU(entity.getQuantitySU());
         dto.setId(entity.getId());
-        dto.setExpire(entity.getExpire());
+        dto.setExpireDate(entity.getExpire());
         dto.setProductId(entity.getProduct().getId());
         return dto;
     }

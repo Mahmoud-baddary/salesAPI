@@ -13,11 +13,13 @@ public class StockDTO {
     @NotNull(message = "product id is required")
     private Long productId;
     @NotNull(message = "expire date is required")
-    private LocalDate expire;
+    private LocalDate expireDate;
+    @NotNull(message = "quantitySU is required")
     @PositiveOrZero(message = "quantitySU must be equal or greater than zero")
     private BigDecimal quantitySU;
     @NotBlank(message = "batch is required")
     private String batch;
+    @NotNull(message = "priceSU is required")
     @Positive(message = "priceSU must be greater than zero")
     private BigDecimal priceSU;
 
@@ -37,12 +39,12 @@ public class StockDTO {
         this.productId = productId;
     }
 
-    public LocalDate getExpire() {
-        return expire;
+    public LocalDate getExpireDate() {
+        return expireDate;
     }
 
-    public void setExpire(LocalDate expire) {
-        this.expire = expire;
+    public void setExpireDate(LocalDate expire) {
+        this.expireDate = expire;
     }
 
     public BigDecimal getQuantitySU() {

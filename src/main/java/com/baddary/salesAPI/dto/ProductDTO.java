@@ -1,7 +1,9 @@
 package com.baddary.salesAPI.dto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.util.HashSet;
@@ -17,10 +19,12 @@ public class ProductDTO {
     private String mediumUnit;
     @NotBlank(message = "smallest unit is required")
     private String smallestUnit;
-    @Positive(message = "medium unit amount is required")
-    private int mediumUnitAmount;
-    @Positive(message = "smallest unit amount is required")
-    private int smallestUnitAmount;
+    @NotNull(message = "medium unit amount is required")
+    @Positive(message = "medium unit amount must be a positive number")
+    private Integer mediumUnitAmount;
+    @NotNull(message = "smallest unit amount is required")
+    @Positive(message = "smallest unit amount must be a positive number")
+    private Integer smallestUnitAmount;
 
     @Valid
     private final Set<BarcodeDTO> barcodeDTOSet = new HashSet<>();
@@ -28,11 +32,19 @@ public class ProductDTO {
     public ProductDTO() {
     }
 
-    public void setBarcodeDTOSet(Set<BarcodeDTO> barcodeDTOSet){
+    public void setBarcodeDTOSet(Set<BarcodeDTO> barcodeDTOSet) {
         this.barcodeDTOSet.clear();
-        if(barcodeDTOSet != null){
+        if (barcodeDTOSet != null) {
             this.barcodeDTOSet.addAll(barcodeDTOSet);
         }
+    }
+
+    @AssertTrue(message = "Smallest unit amount must be greater than medium unit amount and divisible by it")
+    public boolean isUnitAmountsValid() {
+        if (mediumUnitAmount == null || smallestUnitAmount == null)
+            return true; // Let @NotNull handle nulls
+        int remainder = smallestUnitAmount % mediumUnitAmount;
+        return smallestUnitAmount > mediumUnitAmount && remainder == 0;
     }
 
     public Long getId() {
@@ -90,7 +102,6 @@ public class ProductDTO {
     public void setSmallestUnitAmount(int smallestUnitAmount) {
         this.smallestUnitAmount = smallestUnitAmount;
     }
-
 
     public Set<BarcodeDTO> getBarcodeDTOSet() {
         return barcodeDTOSet;

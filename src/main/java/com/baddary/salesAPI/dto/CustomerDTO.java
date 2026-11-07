@@ -1,6 +1,7 @@
 package com.baddary.salesAPI.dto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
@@ -11,7 +12,9 @@ public class CustomerDTO {
     private Long id;
     @NotBlank(message = "Customer name is required")
     private String name;
-    private String email, address;
+    @Email(message = "Invalid email format")
+    private String email;
+    private String address;
     @Valid
     private final Set<PhoneDTO> phoneDTOSet = new HashSet<>();
     private BigDecimal balance = BigDecimal.ZERO;
@@ -65,8 +68,8 @@ public class CustomerDTO {
         return balance;
     }
 
-    public void setBalance(BigDecimal amountOwed) {
-        this.balance = amountOwed != null ? amountOwed : BigDecimal.ZERO;
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance != null ? balance : BigDecimal.ZERO;
     }
 
    

@@ -1,11 +1,15 @@
 package com.baddary.salesAPI.dto;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OrderProductDTO {
     @NotNull(message = "product id is required")
@@ -15,18 +19,22 @@ public class OrderProductDTO {
     @NotBlank(message = "unit is required")
     private String unit;
     private String note;
+    @NotNull(message = "quantity is required")
     @Positive(message = "quantity must be greater than zero")
     private BigDecimal quantity;
+    @NotNull(message = "price is required")
     @Positive(message = "price must be positive number")
     private BigDecimal price;
+    @DecimalMax(value = "100.0", message = "discount must be between 0 and 100")
+    @DecimalMin(value = "0.0", message = "discount must be between 0 and 100")
     private BigDecimal discount = BigDecimal.ZERO;
     @NotNull(message = "expire is required")
     private LocalDate expireDate;
     private Long orderId;
     private ProductSummaryDTO productSummaryDTO;
-    @Positive (message = "Quantity of smallest unit must be a positive number")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal quantitySU;
-    @Positive (message = "Price of smallest unit must be a positive number")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal priceSU;
     
 
@@ -115,7 +123,6 @@ public class OrderProductDTO {
     public BigDecimal getQuantitySU() {
         return quantitySU;
     }
-
     public void setQuantitySU(BigDecimal quantitySU) {
         this.quantitySU = quantitySU;
     }
@@ -129,4 +136,6 @@ public class OrderProductDTO {
     public void setPriceSU(BigDecimal priceSU) {
         this.priceSU = priceSU;
     }
+
+    
 }

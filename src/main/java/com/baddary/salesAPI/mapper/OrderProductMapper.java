@@ -1,6 +1,8 @@
 package com.baddary.salesAPI.mapper;
 
 
+import java.math.BigDecimal;
+
 import com.baddary.salesAPI.dto.OrderProductDTO;
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.entity.OrderProduct;
@@ -21,8 +23,8 @@ public class OrderProductMapper {
         entity.setNote(dto.getNote());
         entity.setDiscount(dto.getDiscount());
         entity.setBatch(dto.getBatch());
-        entity.setQuantitySU(dto.getQuantitySU());
-        entity.setPriceSU(dto.getPriceSU());
+        entity.setQuantitySU(calculateQuantitSU(p, dto.getQuantity(), dto.getUnit()));
+        entity.setPriceSU(calculatePriceSU(p, dto.getPrice(), dto.getUnit()));
         return entity;
     }
 
@@ -42,5 +44,29 @@ public class OrderProductMapper {
         dto.setQuantitySU(entity.getQuantitySU());
         return dto;
 
+    }
+
+    private static BigDecimal calculateQuantitSU(Product product, BigDecimal quantity, String unit) {
+        if (unit.equals(product.getSmallestUnit())) {
+            return quantity;
+        } else if (unit.equals(product.getMediumUnit())) {
+            return quantity.multiply((new BigDecimal(product.getSmallestUnitAmount()).divide(new BigDecimal(product.getMediumUnitAmount()))));
+        } else if (unit.equals(product.getGreatestUnit())) {
+            return quantity.multiply(new BigDecimal(product.getSmallestUnitAmount()));
+        } else {
+            throw new IllegalArgumentException("Invalid unit: " + unit);
+        }
+    }
+
+    private static BigDecimal calculatePriceSU(Product product, BigDecimal price, String unit) {
+        if (unit.equals(product.getSmallestUnit())) {
+            return price;
+        } else if (unit.equals(product.getMediumUnit())) {
+            return price.divide((new BigDecimal(product.getSmallestUnitAmount()).divide(new BigDecimal(product.getMediumUnitAmount()))));
+        } else if (unit.equals(product.getGreatestUnit())) {
+            return price.divide(new BigDecimal(product.getSmallestUnitAmount()));
+        } else {
+            throw new IllegalArgumentException("Invalid unit: " + unit);
+        }
     }
 }

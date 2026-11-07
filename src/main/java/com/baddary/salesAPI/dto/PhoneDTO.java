@@ -1,10 +1,12 @@
 package com.baddary.salesAPI.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class PhoneDTO {
     private Long id;
     @NotBlank(message = "phone number is required")
+    @Pattern (regexp = "^[0-9\\-\\s()]*$", message = "Invalid phone number format")
     private String phoneNum;
     private Long customerId;
 

@@ -3,6 +3,7 @@ package com.baddary.salesAPI.dto;
 import com.baddary.salesAPI.enums.OrderType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,12 +20,12 @@ public class OrderDTO {
     private LocalTime time;
     @NotNull(message = "order type is required")
     private OrderType orderType;
-    @NotNull(message = "paid money is required")
+    @NotNull(message = "paid money is required and must be zero or positive")
+    @PositiveOrZero(message = "paid money is required and must be zero or positive")
     private BigDecimal paidMoney;
     private BigDecimal discount = BigDecimal.ZERO;
     @NotNull(message = "Customer id is required")
     private Long customerId;
-    @NotNull(message = "User id is required")
     private Long userId;
     private Long originalOrderId; 
     @Valid
@@ -123,12 +124,6 @@ public class OrderDTO {
         this.userName = userName;
     }
 
-    // public double getTotalPrice() {
-    // return orderProductDTOSet.stream()
-    // .mapToDouble(item -> (item.getQuantity() * item.getPrice()) * (1 -
-    // item.getDiscount() / 100.0))
-    // .sum() * (1 - discount / 100.0);
-    // }
     public BigDecimal calculateTotalPrice() {
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (OrderProductDTO item : orderProductDTOSet) {

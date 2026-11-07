@@ -1,8 +1,11 @@
 package com.baddary.salesAPI.dto;
 
 import com.baddary.salesAPI.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class UserDTO {
     private Long id;
@@ -10,6 +13,8 @@ public class UserDTO {
     private String name;
     @NotNull(message = "role is required")
     private UserRole role;
+    @Size (min = 6, message = "password must be at least 6 characters long")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "password is required")
     private String password;
 

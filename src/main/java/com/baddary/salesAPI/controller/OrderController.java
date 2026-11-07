@@ -8,6 +8,7 @@ import com.baddary.salesAPI.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +33,9 @@ public class OrderController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<OrderDTO>> searchOrders(@RequestBody @Valid OrderSearchDTO dto) {
-        List<OrderDTO> orders = orderService.searchOrders(dto);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<Page<OrderDTO>> searchOrders(@RequestBody @Valid OrderSearchDTO dto) {
+        Page<OrderDTO> orderPage = orderService.searchOrders(dto);
+        return ResponseEntity.ok(orderPage);
     }
 
     @GetMapping("/{id}")
