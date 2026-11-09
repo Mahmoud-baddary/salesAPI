@@ -11,7 +11,7 @@ public class CashRegister {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", unique = true)
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
     private User user;
 
     @Column(precision = 10, scale = 2)
@@ -46,16 +46,13 @@ public class CashRegister {
     }
 
     public void setCurrentAmount(BigDecimal currentAmount) {
-        this.currentAmount = currentAmount;
+        this.currentAmount = currentAmount != null ? currentAmount : BigDecimal.ZERO;
     }
 
     public Long getVersion() {
         return version;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
-    }
 
     
 }

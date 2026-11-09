@@ -9,17 +9,21 @@ import java.util.Objects;
 public class Phone {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
+    private Long id;
     @Column(nullable = false, unique = true)
     private String phoneNum;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
     public Phone(String phoneNum) {
+        if (phoneNum == null || phoneNum.isBlank()) {
+            throw new IllegalArgumentException("phoneNum cannot be null or blank");
+        }
         this.phoneNum = phoneNum.strip();
     }
-    public Phone(){
+
+    public Phone() {
 
     }
 
@@ -39,10 +43,6 @@ public class Phone {
         return phoneNum;
     }
 
-    public void setPhoneNum(String phoneNum) {
-        this.phoneNum = phoneNum;
-    }
-
     public Long getId() {
         return id;
     }
@@ -57,7 +57,10 @@ public class Phone {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Phone phone = (Phone) o;
         return Objects.equals(phoneNum, phone.phoneNum);
     }

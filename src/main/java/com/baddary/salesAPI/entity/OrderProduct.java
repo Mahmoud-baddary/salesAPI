@@ -11,10 +11,10 @@ public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
     @Column(nullable = false)
@@ -46,9 +46,13 @@ public class OrderProduct {
         return priceSU;
     }
 
-    
-
     public void setPriceSU(BigDecimal priceSU) {
+        if (priceSU == null) {
+            throw new IllegalArgumentException("priceSU cannot be null");
+        }
+        if (priceSU.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("priceSU cannot be negative or zero");
+        }
         this.priceSU = priceSU;
     }
 
@@ -101,11 +105,23 @@ public class OrderProduct {
     }
 
     public void setQuantitySU(BigDecimal quantitySU) {
+        if (quantitySU == null) {
+            throw new IllegalArgumentException("quantitySU cannot be null");
+        }
+        if (quantitySU.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("quantitySU cannot be negative or zero");
+        }
         this.quantitySU = quantitySU;
-        
+
     }
 
     public void setQuantity(BigDecimal quantity) {
+        if (quantity == null) {
+            throw new IllegalArgumentException("quantity cannot be null");
+        }
+        if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("quantity cannot be negative or zero");
+        }
         this.quantity = quantity;
     }
 
@@ -114,7 +130,13 @@ public class OrderProduct {
     }
 
     public void setPrice(BigDecimal price) {
-        this.price = price ;
+        if (price == null) {
+            throw new IllegalArgumentException("price cannot be null");
+        }
+        if (price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("price cannot be negative or zero");
+        }
+        this.price = price;
     }
 
     public BigDecimal getDiscount() {
@@ -141,47 +163,27 @@ public class OrderProduct {
         this.expireDate = expireDate;
     }
 
-    // private BigDecimal calculateQuantitySU(BigDecimal quantity) {
-    //     String unit = this.getUnit();
-    //     if (unit.equalsIgnoreCase(this.product.getGreatestUnit())) {
-    //         return quantity.multiply( BigDecimal.valueOf(this.product.getSmallestUnitAmount()));
-    //     } else if (unit.equalsIgnoreCase(this.product.getMediumUnit())) {
-    //         return quantity.multiply(BigDecimal.valueOf((double) this.product.getSmallestUnitAmount() / this.product.getMediumUnitAmount()));
-    //     } else {
-    //         return quantity;
-    //     }
-    // }
+    @Override
+    public boolean equals(Object o) {
+        // 1. If it's the exact same memory address, it's equal
+        if (this == o)
+            return true;
 
-    // private BigDecimal calculatePriceSU(BigDecimal price) {
-    //     if (price == null || unit == null || product == null)
-    //         return null;
-    //     BigDecimal result;
-    //     if (this.unit.equalsIgnoreCase(this.product.getGreatestUnit())) {
-    //         result = price.divide(BigDecimal.valueOf(this.product.getSmallestUnitAmount()), 2, RoundingMode.HALF_UP);
-    //     } else if (this.unit.equalsIgnoreCase(this.product.getMediumUnit())) {
-    //         double divisor = (double) this.product.getSmallestUnitAmount() / this.product.getMediumUnitAmount();
-    //         result = price.divide(BigDecimal.valueOf(divisor), 2, RoundingMode.HALF_UP);
-    //     } else {
-    //         result = price;
-    //     }
-    //     return result;
-    // }
+        // 2. If the other object is null, or not the same class, it's not equal
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        // 3. Cast the other object
+        OrderProduct orderProduct = (OrderProduct) o;
+
+        // 4. If this ID is null, it's a new object. It can't be equal to anything else.
+        // 5. If both have IDs, compare them.
+        return id != null && id.equals(orderProduct.id);
+    }
 
     @Override
-    public String toString() {
-        return "OrderProduct{" +
-                "id=" + id +
-                ", product=" + product +
-                ", order=" + order +
-                ", batch='" + batch + '\'' +
-                ", unit='" + unit + '\'' +
-                ", quantity=" + quantity +
-                ", quantitySU=" + quantitySU +
-                ", price=" + price +
-                ", discount=" + discount +
-                ", note='" + note + '\'' +
-                ", expireDate=" + expireDate +
-                ", priceSU=" + priceSU +
-                '}';
+    public int hashCode() {
+        // Always return the same number for this class
+        return getClass().hashCode();
     }
 }

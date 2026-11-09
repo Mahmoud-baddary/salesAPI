@@ -32,6 +32,12 @@ public class Safe {
     }
 
     public void setTotalAmount(BigDecimal totalAmount) {
+        if (totalAmount == null) {
+            throw new IllegalArgumentException("totalAmount cannot be null");
+        }
+        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("totalAmount cannot be negative");
+        }
         this.totalAmount = totalAmount;
     }
 
@@ -39,8 +45,19 @@ public class Safe {
         return version;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        Safe other = (Safe) obj;
+        return id != null && id.equals(other.id);
     }
 
 }

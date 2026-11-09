@@ -22,19 +22,16 @@ public class Product {
     @Column(nullable = false)
     private int mediumUnitAmount;
     @Column(nullable = false)
-    private int SmallestUnitAmount;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private int smallestUnitAmount;
+    @OneToMany(mappedBy = "product", orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<OrderProduct> orderProductSet = new HashSet<>();
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Barcode> barcodes = new HashSet<>();
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Stock> stocks = new HashSet<>();
 
     public Product() {
     }
-
-
-
 
     public void setId(Long id) {
         this.id = id;
@@ -45,15 +42,21 @@ public class Product {
     }
 
     public void setMediumUnitAmount(int mediumUnitAmount) {
+        if (mediumUnitAmount <= 0) {
+            throw new IllegalArgumentException("mediumUnitAmount must be greater than zero");
+        }
         this.mediumUnitAmount = mediumUnitAmount;
     }
 
     public int getSmallestUnitAmount() {
-        return SmallestUnitAmount;
+        return smallestUnitAmount;
     }
 
     public void setSmallestUnitAmount(int smallestUnitAmount) {
-        this.SmallestUnitAmount = smallestUnitAmount;
+        if (smallestUnitAmount <= 0) {
+            throw new IllegalArgumentException("smallestUnitAmount must be greater than zero");
+        }                       
+        this.smallestUnitAmount = smallestUnitAmount;
     }
 
     public Set<Barcode> getBarcodes() {
@@ -73,20 +76,19 @@ public class Product {
         barcode.setProduct(this);
     }
 
-    public void removeBarcode(Barcode barcode){
+    public void removeBarcode(Barcode barcode) {
         barcodes.remove(barcode);
         barcode.setProduct(null);
     }
-
-   
-
-
 
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Product name cannot be null or blank");
+        }
         this.name = name.toUpperCase().strip();
     }
 
@@ -95,7 +97,10 @@ public class Product {
     }
 
     public void setGreatestUnit(String greatestUnit) {
-        this.greatestUnit = greatestUnit;
+        if (greatestUnit == null || greatestUnit.isBlank()) {
+            throw new IllegalArgumentException("Greatest unit cannot be null or blank");
+        }
+        this.greatestUnit = greatestUnit.strip();
     }
 
     public String getMediumUnit() {
@@ -103,7 +108,10 @@ public class Product {
     }
 
     public void setMediumUnit(String mediumUnit) {
-        this.mediumUnit = mediumUnit;
+        if (mediumUnit == null || mediumUnit.isBlank()) {
+            throw new IllegalArgumentException("Medium unit cannot be null or blank");
+        }
+        this.mediumUnit = mediumUnit.strip();
     }
 
     public String getSmallestUnit() {
@@ -111,18 +119,28 @@ public class Product {
     }
 
     public void setSmallestUnit(String smallestUnit) {
-        this.smallestUnit = smallestUnit;
+        if (smallestUnit == null || smallestUnit.isBlank()) {
+            throw new IllegalArgumentException("Smallest unit cannot be null or blank");
+        }
+        this.smallestUnit = smallestUnit.strip();
     }
-
-    @Override
-    public String toString() {
-        return this.name;
-    }
-
-
-
 
     public Set<Stock> getStocks() {
         return stocks;
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Product product = (Product) o;
+        return id != null && id.equals(product.id);
     }
 }

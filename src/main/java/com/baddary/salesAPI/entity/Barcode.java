@@ -10,16 +10,19 @@ public class Barcode {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(unique = true)
+    @Column(unique = true, name = "barcode_txt", nullable = false)
     private String barcodeTxt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
+    public Barcode() {
 
-    public Barcode(){
+    }
 
+    public Barcode(String barcodeTxt) {
+        this.barcodeTxt = barcodeTxt;
     }
 
     public Product getProduct() {
@@ -42,11 +45,6 @@ public class Barcode {
         return barcodeTxt;
     }
 
-    public void setBarcodeTxt(String barcodeTxt) {
-        this.barcodeTxt = barcodeTxt;
-    }
-
-
     @Override
     public String toString() {
         return "Barcode{" +
@@ -57,7 +55,8 @@ public class Barcode {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Barcode barcode1)) return false;
+        if (!(o instanceof Barcode barcode1))
+            return false;
         return Objects.equals(barcodeTxt, barcode1.barcodeTxt);
     }
 

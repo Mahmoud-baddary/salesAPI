@@ -22,7 +22,7 @@ public class Customer {
     private String email;
     private String address;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("phoneNum ASC")
     private Set<Phone> phones = new HashSet<>();
 
@@ -40,7 +40,7 @@ public class Customer {
     public void setId(Long id) { this.id = id; }
 
     public String getName() { return name; }
-    public void setName(String name) { this.name = name.toUpperCase().strip(); }
+    public void setName(String name) { this.name = name != null ? name.toUpperCase().strip() : null; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -49,11 +49,10 @@ public class Customer {
     public void setAddress(String address) { this.address = address; }
 
     public Set<Phone> getPhones() { return phones; }
-    public void setPhones(Set<Phone> phones) { this.phones = phones; } // optional setter
 
     public BigDecimal getBalance() { return balance; }
-    public void setBalance(BigDecimal amountOwed) {
-        this.balance = amountOwed != null ? amountOwed : BigDecimal.ZERO;
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance != null ? balance : BigDecimal.ZERO;
     }
 
 
@@ -67,23 +66,34 @@ public class Customer {
         phone.setCustomer(null);
     }
 
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", address='" + address + '\'' +
-                ", phones=" + phones +
-                ", amountOwed=" + balance +
-                '}';
-    }
+    
 
-    public long getVersion() {
+    public Long getVersion() {
         return version;
     }
 
-    public void setVersion(long version) {
-        this.version = version;
+    @Override
+    public boolean equals(Object o) {
+        // 1. If it's the exact same memory address, it's equal
+        if (this == o)
+            return true;
+
+        // 2. If the other object is null, or not the same class, it's not equal
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        // 3. Cast the other object
+        Customer customer = (Customer) o;
+
+        // 4. If this ID is null, it's a new object. It can't be equal to anything else.
+        // 5. If both have IDs, compare them.
+        return id != null && id.equals(customer.id);
     }
+
+    @Override
+    public int hashCode() {
+        // Always return the same number for this class
+        return getClass().hashCode();
+    }
+
 }
