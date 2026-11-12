@@ -6,6 +6,8 @@ import com.baddary.salesAPI.entity.User;
 import com.baddary.salesAPI.mapper.UserMapper;
 import com.baddary.salesAPI.repository.CashRegisterRepository;
 import com.baddary.salesAPI.repository.UserRepository;
+
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +34,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTO addUser(UserDTO userDTO) {
-        if (userDTO.getName().isBlank() || userDTO.getPassword().isBlank())
+    public UserDTO addUser(UserDTO dto) {
+        if (dto.getName().isBlank() || dto.getPassword().isBlank())
             throw new RuntimeException("name or password is empty");
-        User saved = userRepository.save(UserMapper.toEntity(userDTO));
+        User user = UserMapper.toEntity(dto);
+        user.setPassword(BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt()));
+        User saved = userRepository.save(user);
         CashRegister cashRegister = new CashRegister();
         cashRegister.setCurrentAmount(BigDecimal.ZERO);
         cashRegister.setUser(saved);

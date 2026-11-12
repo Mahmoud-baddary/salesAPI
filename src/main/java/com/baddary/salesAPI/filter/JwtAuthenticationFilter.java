@@ -32,7 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Allow public endpoints without token
-        if (path.equals("/auth/login") || path.equals("/users/first") || path.equals("/users/count")) {
+        if (path.equals("/auth/login") || path.equals("/users/first") ||
+                path.equals("/users/count") || path.equals("/error")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,11 +59,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                sendErrorJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
                 return;
             }
         }
 
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+        sendErrorJson(response, HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+    }
+
+    private void sendErrorJson(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 }

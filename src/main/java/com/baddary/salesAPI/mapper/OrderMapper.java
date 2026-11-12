@@ -1,14 +1,15 @@
 package com.baddary.salesAPI.mapper;
 
-
 import com.baddary.salesAPI.dto.OrderDTO;
 import com.baddary.salesAPI.entity.Customer;
 import com.baddary.salesAPI.entity.Order;
 import com.baddary.salesAPI.entity.User;
 
 public class OrderMapper {
-    private OrderMapper(){}
-    public static Order toEntity (OrderDTO dto, User user, Customer customer, Order originalOrder){
+    private OrderMapper() {
+    }
+
+    public static Order toEntity(OrderDTO dto, User user, Customer customer, Order originalOrder) {
         Order entity = new Order();
         entity.setCustomer(customer);
         entity.setOriginalOrder(originalOrder);
@@ -21,7 +22,7 @@ public class OrderMapper {
         return entity;
     }
 
-    public static OrderDTO toDTO(Order entity){
+    public static OrderDTO toDTO(Order entity) {
         OrderDTO dto = new OrderDTO();
         dto.setId(entity.getId());
         dto.setDate(entity.getDate());
@@ -29,13 +30,19 @@ public class OrderMapper {
         dto.setOrderType(entity.getOrderType());
         dto.setDiscount(entity.getDiscount());
         dto.setPaidMoney(entity.getPaidMoney());
-        dto.setCustomerId(entity.getCustomer().getId());
-        dto.setUserId(entity.getUser().getId());
-        dto.setCustomerName(entity.getCustomer().getName());
-        dto.setUserName(entity.getUser().getName());
-        Long originalOrderId = entity.getOriginalOrder() == null ? null : entity.getOriginalOrder().getId();
-        dto.setOriginalOrderId(originalOrderId);
-        dto.getOrderProductDTOSet().addAll(entity.getOrderProductSet().stream().map(OrderProductMapper::toDTO).toList());
+        if (entity.getCustomer() != null) {
+            dto.setCustomerId(entity.getCustomer().getId());
+            dto.setCustomerName(entity.getCustomer().getName());
+        }
+        if (entity.getUser() != null) {
+            dto.setUserId(entity.getUser().getId());
+            dto.setUserName(entity.getUser().getName());
+        }
+        if (entity.getOriginalOrder() != null) {
+            dto.setOriginalOrderId(entity.getOriginalOrder().getId());
+        }
+        dto.getOrderProductDTOSet()
+                .addAll(entity.getOrderProductSet().stream().map(OrderProductMapper::toDTO).toList());
 
         return dto;
     }

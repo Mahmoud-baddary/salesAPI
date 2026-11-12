@@ -105,21 +105,7 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
     }
 
-    // public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
-    //     int retries = 3;
-    //     while (retries > 0) {
-    //         try {
-    //             return doSettleCustomerBalance(customerId, userId, amount);
-    //         } catch (OptimisticLockException | OptimisticLockingFailureException e) {
-    //             retries--;
-    //             if (retries == 0) {
-    //                 throw new RuntimeException("Customer balance was updated by another transaction. Please try again.",
-    //                         e);
-    //             }
-    //         }
-    //     }
-    //     throw new RuntimeException("Unexpected error");
-    // }
+  
 
     public List<String> findAllNames() {
         return customerRepository.findNameBy();

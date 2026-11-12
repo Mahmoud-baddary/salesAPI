@@ -34,7 +34,7 @@ public class StockService {
                 .orElseGet(() -> {
                     Stock s = new Stock();
                     s.setProduct(product);
-                    s.setExpire(expire);
+                    s.setExpireDate(expire);
                     s.setBatch(batch);
                     s.setQuantitySU(BigDecimal.ZERO);
                     s.setPriceSU(priceSU);

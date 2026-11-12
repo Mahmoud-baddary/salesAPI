@@ -9,15 +9,16 @@ public class PhoneMapper {
     }
 
     public static Phone toEntity(PhoneDTO dto){
-        Phone phone = new Phone();
-        phone.setPhoneNum(dto.getPhoneNum());
+        Phone phone = new Phone(dto.getPhoneNum());
         return phone;
     }
     public static PhoneDTO toDTO(Phone entity){
         PhoneDTO dto = new PhoneDTO();
         dto.setId(entity.getId());
         dto.setPhoneNum(entity.getPhoneNum());
-        dto.setCustomerId(entity.getCustomer().getId());
+        if(entity.getCustomer() != null) {
+            dto.setCustomerId(entity.getCustomer().getId());
+        }
         return dto;
     }
 

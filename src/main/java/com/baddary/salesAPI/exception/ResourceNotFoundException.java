@@ -7,7 +7,7 @@ public class ResourceNotFoundException extends RuntimeException {
     }
 
     public ResourceNotFoundException(String resourceName, Object resourceValue) {
-        super(resourceName + " " + resourceValue + " not found");
+        super(resourceName + "with identifier '" + resourceValue + "' not found");
     }
     
 }

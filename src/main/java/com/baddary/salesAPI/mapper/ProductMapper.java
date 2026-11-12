@@ -56,6 +56,7 @@ public class ProductMapper {
         entity.setMediumUnitAmount(dto.getMediumUnitAmount());
         entity.setMediumUnit(dto.getMediumUnit());
         entity.setSmallestUnit(dto.getSmallestUnit());
+        entity.setGreatestUnit(dto.getGreatestUnit());
         dto.getBarcodeDTOSet().forEach(barcodeDTO->{
             Barcode barcode = BarcodeMapper.toEntity(barcodeDTO);
             entity.addBarcode(barcode);

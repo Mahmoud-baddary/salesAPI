@@ -1,13 +1,10 @@
 package com.baddary.salesAPI.entity;
 
-
 import com.baddary.salesAPI.enums.UserRole;
 import jakarta.persistence.*;
-import org.mindrot.jbcrypt.BCrypt;
 
 @Entity
 @Table(name = "users")
-@NamedQuery(name = "find user by id", query = "SELECT u FROM User u WHERE u.id = :id")
 public class User {
 
     @Id
@@ -17,22 +14,22 @@ public class User {
     @Column(nullable = false, unique = true)
     private String name;
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private UserRole role;
 
     @Column(nullable = false)
     private String password;
 
-
     public User() {
     }
-
 
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
-        this.password = BCrypt.hashpw(password, BCrypt.gensalt());
+        //this.password = BCrypt.hashpw(password, BCrypt.gensalt());
+        this.password = password;
     }
 
     public Long getId() {
@@ -48,7 +45,7 @@ public class User {
     }
 
     public void setName(String name) {
-        this.name = name.toUpperCase().strip();
+        this.name = name != null ? name.toUpperCase().strip() : null;
     }
 
     public UserRole getRole() {
@@ -59,14 +56,27 @@ public class User {
         this.role = role;
     }
 
-
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", userName='" + name + '\'' +
                 ", role=" + role +
-                ", pwd='" + password + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

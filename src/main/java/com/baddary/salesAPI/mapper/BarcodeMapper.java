@@ -14,8 +14,7 @@ public class BarcodeMapper {
         return dto;
     }
     public static Barcode toEntity(BarcodeDTO dto){
-        Barcode entity = new Barcode();
-        entity.setBarcodeTxt(dto.getBarcodeTxt());
+        Barcode entity = new Barcode(dto.getBarcodeTxt());
         return entity;
     }
 

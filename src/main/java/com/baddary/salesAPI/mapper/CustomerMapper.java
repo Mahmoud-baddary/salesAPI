@@ -15,7 +15,6 @@ public class CustomerMapper {
         dto.setEmail(entity.getEmail());
         dto.setId(entity.getId());
         dto.setName(entity.getName());
-        dto.setId(entity.getId());
         dto.setBalance(entity.getBalance());
         dto.getPhoneDTOSet().addAll(entity.getPhones().stream().map(PhoneMapper::toDTO).toList());
         return dto;
@@ -27,7 +26,6 @@ public class CustomerMapper {
         entity.setAddress(dto.getAddress());
         entity.setEmail(dto.getEmail());
         entity.setName(dto.getName());
-        entity.setId(dto.getId());
         dto.getPhoneDTOSet().forEach(phoneDTO->{
             Phone phone = PhoneMapper.toEntity(phoneDTO);
             entity.addPhone(phone);
