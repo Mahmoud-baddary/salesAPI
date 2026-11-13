@@ -1,29 +1,29 @@
 package com.baddary.salesAPI.repository;
 
 import com.baddary.salesAPI.entity.Product;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductRepository extends CrudRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    List<Product> findByNameContainingIgnoreCase(String name);
+    @Query("SELECT p from Product p left join fetch p.barcodes where lower(p.name) = lower(:name)")
+    Optional<Product> findByName(@Param("name") String name);
 
-    @Query("SELECT p from Product p left join fetch p.barcodes where p.name = :name")
-    Optional<Product> findByName(String name);
-
-    @Query("Select p from Product p left join fetch p.barcodes")
+    @Query("Select Distinct p from Product p left join fetch p.barcodes")
     List<Product> findAll();
 
     @Query("""
-                select p
+                select distinct p
                 from Product p
                 left join fetch p.barcodes
                 where lower(p.name) like lower(concat('%', :name, '%'))
             """)
-    List<Product> findByNameIgnoreCase(String name);
+    List<Product> findByNameIgnoreCase(@Param("name") String name);
     @Query("Select p from Product p left join fetch p.barcodes where p.id = :id")
-    Optional<Product> findById(Long id);
+    Optional<Product> findById(@Param("id") Long id);
 }

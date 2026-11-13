@@ -169,6 +169,6 @@ public class CashService {
     // }
 
     public Optional<BigDecimal> currentAmount(Long userId) {
-        return cashRegisterRepository.currentAmount(userId);
+        return cashRegisterRepository.findCurrentAmountByUserId(userId);
     }
 }

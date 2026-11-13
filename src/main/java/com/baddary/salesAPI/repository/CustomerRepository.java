@@ -1,39 +1,40 @@
 package com.baddary.salesAPI.repository;
 
 import com.baddary.salesAPI.entity.Customer;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface CustomerRepository extends CrudRepository<Customer, Long> {
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     @Query("select c from Customer c LEFT JOIN FETCH c.phones where lower(c.name) = lower(:name)")
-    Optional<Customer> findByName(String name);
+    Optional<Customer> findByName(@Param("name") String name);
 
-    @Query("select c from Customer c LEFT JOIN FETCH c.phones")
+    @Query("select distinct c from Customer c LEFT JOIN FETCH c.phones")
     List<Customer> findAll();
 
     @Query("""
-                select c
+                select distinct c
                 from Customer c
                 left join fetch c.phones
                 where lower(c.name) like lower(concat('%', :name, '%'))
             """)
-    List<Customer> searchByName(String name);
+    List<Customer> searchByName(@Param("name") String name);
 
-    @Query("select c.name from Customer c")
+    @Query("select distinct c.name from Customer c")
     List<String> findNameBy();
 
     @Query("SELECT c from Customer c left join fetch c.phones where c.id = :id")
-    Optional<Customer> findById(Long id);
+    Optional<Customer> findById(@Param("id") Long id);
 
     @Query("SELECT c FROM Customer c join fetch c.phones p where p.phoneNum = :phoneNum")
-    Optional<Customer> findByPhone(String phoneNum);
+    Optional<Customer> findByPhone(@Param("phoneNum") String phoneNum);
 
-    @Query("SELECT c FROM Customer c left join fetch c.phones WHERE " +
+    @Query("SELECT DISTINCT c FROM Customer c left join fetch c.phones WHERE " +
             "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
             "AND (" +
             "   (:balanceStatus = 'ALL') OR " +

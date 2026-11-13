@@ -16,6 +16,6 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
     @Query("""
             SELECT c.currentAmount FROM CashRegister c WHERE c.user.id = :userId
             """)
-    Optional<BigDecimal> currentAmount(@Param("userId") Long userId);
+    Optional<BigDecimal> findCurrentAmountByUserId(@Param("userId") Long userId);
 
 }
