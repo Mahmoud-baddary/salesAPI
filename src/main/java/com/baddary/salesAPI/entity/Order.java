@@ -30,6 +30,9 @@ public class Order {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal paidMoney;
 
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalPrice;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal discount = BigDecimal.ZERO;
 
@@ -136,6 +139,17 @@ public class Order {
 
     public void setOriginalOrder(Order originalOrder) {
         this.originalOrder = originalOrder;
+    }
+
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(BigDecimal totalPrice) {
+        if (totalPrice == null || totalPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("totalPrice must be greater than zero");
+        }
+        this.totalPrice = totalPrice;
     }
 
     @Override

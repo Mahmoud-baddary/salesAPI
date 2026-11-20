@@ -6,7 +6,6 @@ import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.service.OrderService;
 import com.baddary.salesAPI.service.UserService;
 import jakarta.validation.Valid;
-import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

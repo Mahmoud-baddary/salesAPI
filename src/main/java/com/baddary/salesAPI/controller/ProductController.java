@@ -4,11 +4,12 @@ import com.baddary.salesAPI.dto.ProductDTO;
 import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.service.ProductService;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -20,8 +21,10 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ProductDTO>> searchByName(@RequestParam String name) {
-        return ResponseEntity.ok(productService.searchByName(name));
+    public ResponseEntity<Page<ProductDTO>> searchByName(@RequestParam String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(productService.searchByName(name, page, size));
     }
 
     @PreAuthorize("hasRole('ADMIN')") // Only admins can access this endpoint
@@ -39,8 +42,10 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> findAll() {
-        return ResponseEntity.ok(productService.findAll());
+    public ResponseEntity<Page<ProductDTO>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(productService.findAll(page, size));
     }
 
     @GetMapping("/{id}")

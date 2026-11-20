@@ -15,7 +15,7 @@ import com.baddary.salesAPI.specification.OrderSpecifications;
 import com.baddary.salesAPI.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -61,16 +61,16 @@ public class OrderService {
                 // check the quantity
                 for (OrderProductDTO returnItem : orderReturnDTO.getOrderProductDTOSet()) {
                     OrderProduct originalItem = originalOrder.getOrderProductSet().stream()
-                            .filter(op -> op.getProduct().getId() == returnItem.getProductId()
-                                    && op.getExpireDate().equals(returnItem.getExpireDate())
-                                    && op.getBatch().equals(returnItem.getBatch()))
+                            .filter(op -> op.getProduct().getId().equals(returnItem.getProductId())
+                                    && Objects.equals(op.getExpireDate(), returnItem.getExpireDate())
+                                    && Objects.equals(op.getBatch(), returnItem.getBatch()))
                             .findAny()
-                            .orElseThrow(() -> new RuntimeException("Product is not in the original order"));
+                            .orElseThrow(() -> new IllegalArgumentException("Product is not in the original order"));
                     if (returnItem.getQuantitySU().compareTo(originalItem.getQuantitySU()
                             .subtract(orderRepository.sumReturnedQuantitySU(originalOrderId, returnItem.getProductId(),
                                     returnItem.getExpireDate(), returnItem.getBatch(),
                                     orderReturnDTO.getOrderType()))) > 0) {
-                        throw new RuntimeException("Can't return more than purchased");
+                        throw new IllegalArgumentException("Can't return more than purchased");
                     }
                 }
 
@@ -79,7 +79,7 @@ public class OrderService {
         return originalOrder;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public OrderDTO addOrder(OrderDTO orderDTO) {
         Order originalOrder = validateReturnOrder(orderDTO);
         Customer customer = customerRepository.findById(orderDTO.getCustomerId())
@@ -110,29 +110,15 @@ public class OrderService {
             this.cashService.increaseUserCash(orderDTO.getUserId(), orderDTO.getPaidMoney());
         }
         // Update customer balance
-        BigDecimal totalPrice = orderDTO.calculateTotalPrice();
+        BigDecimal totalPrice = saved.getTotalPrice();
         customerService.updateCustomerBalance(customer, orderDTO, totalPrice);
 
         return OrderMapper.toDTO(saved);
 
     }
 
-    // public List<OrderDTO> searchOrders(String customerName, String productName,
-    // String userName, LocalDate fromDate,
-    // LocalDate toDate, OrderType orderType) {
-    // Specification<Order> spec = Specification
-    // .where(OrderSpecifications.customerNameContains(customerName))
-    // .and(OrderSpecifications.productNameContains(productName))
-    // .and(OrderSpecifications.userNameContains(userName))
-    // .and(OrderSpecifications.dateBetween(fromDate, toDate))
-    // .and(OrderSpecifications.orderTypeEquals(orderType));
-    // List<Order> orders = orderRepository.findAll(spec);
-    // ;
 
-    // return orders.stream().map(OrderMapper::toDTO).toList();
-    // }
-
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<OrderDTO> searchOrders(OrderSearchDTO dto) {
 
         Specification<Order> spec = Specification
@@ -147,10 +133,10 @@ public class OrderService {
                 dto.getSize(),
                 Sort.by("date").descending());
         Page<Order> orderPage = orderRepository.findAll(spec, pageable);
-        return orderPage.map(OrderMapper::toDTO);
+        return orderPage.map(OrderMapper::toSummaryDTO);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<OrderDTO> findById(Long id) {
         return orderRepository.findById(id).map(OrderMapper::toDTO);
     }

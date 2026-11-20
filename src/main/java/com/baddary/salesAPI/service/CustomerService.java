@@ -8,7 +8,9 @@ import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.mapper.CustomerMapper;
 import com.baddary.salesAPI.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,50 +18,50 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final EntityManager entityManager;
     private final CashService cashService;
 
-
-    public CustomerService(CustomerRepository customerRepository, EntityManager entityManager, CashService cashService) {
+    public CustomerService(CustomerRepository customerRepository, EntityManager entityManager,
+            CashService cashService) {
         this.customerRepository = customerRepository;
         this.entityManager = entityManager;
         this.cashService = cashService;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CustomerDTO> findAll() {
         List<Customer> customers = customerRepository.findAll();
         List<CustomerDTO> dtos = customers.stream().map(CustomerMapper::toDTO).toList();
         return dtos;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CustomerDTO> searchByName(String name) {
         List<Customer> customers = customerRepository.searchByName(name);
         List<CustomerDTO> dtos = customers.stream().map(CustomerMapper::toDTO).toList();
         return dtos;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public CustomerDTO addCustomer(CustomerDTO dto) {
         Customer entity = CustomerMapper.toEntity(dto);
         Customer saved = customerRepository.save(entity);
         return CustomerMapper.toDTO(saved);
     }
 
+    @Transactional(readOnly = true)
     public Long count() {
         return customerRepository.count();
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public CustomerDTO updateCustomer(Long id, CustomerDTO dto) {
         Optional<Customer> toUpdateOptional = customerRepository.findById(id);
         Customer toUpdate = toUpdateOptional.orElseThrow(
-                ()->new ResourceNotFoundException("Customer is not found")
-        );
+                () -> new ResourceNotFoundException("Customer is not found"));
         toUpdate.getPhones().clear();
         entityManager.flush();
         CustomerMapper.updateEntity(toUpdate, dto);
@@ -67,11 +69,12 @@ public class CustomerService {
         return CustomerMapper.toDTO(saved);
 
     }
+
     public void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
         BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
         // if paid money is greater that totalprice then throw error
         if (netChange.compareTo(BigDecimal.ZERO) < 0) {
-            throw new RuntimeException("paid money must not be greater than order price");
+            throw new IllegalArgumentException("paid money must not be greater than order price");
         }
         if (netChange.compareTo(BigDecimal.ZERO) != 0) {
             if (orderDTO.getOrderType() == OrderType.SALE || orderDTO.getOrderType() == OrderType.BUY_RETURN) {
@@ -82,55 +85,68 @@ public class CustomerService {
             customerRepository.save(customer);
         }
     }
-    @Transactional
-    public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount){
+
+    public CustomerDTO settleCustomerBalance(Long customerId, Long userId, BigDecimal amount) {
+        int retries = 3;
+        while (retries > 0) {
+            try {
+                return doSettleCustomerBalance(customerId, userId, amount);
+            } catch (OptimisticLockException | OptimisticLockingFailureException e) {
+                retries--;
+                if (retries == 0) {
+                    throw new RuntimeException("Failed to settle customer balance after multiple attempts");
+                }
+            }
+        }
+        throw new RuntimeException("Failed to settle customer balance after multiple attempts");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public CustomerDTO doSettleCustomerBalance(Long customerId, Long userId, BigDecimal amount) {
         Optional<Customer> toUpdateOptional = customerRepository.findById(customerId);
         Customer toUpdate = toUpdateOptional.orElseThrow(
-                ()->new ResourceNotFoundException("Customer is not found")
-        );
+                () -> new ResourceNotFoundException("Customer is not found"));
         BigDecimal balance = toUpdate.getBalance();
-        if(amount.compareTo(balance.abs()) > 0){
-            throw new RuntimeException("amount must not be greater than balance");
+        if (amount.compareTo(balance.abs()) > 0) {
+            throw new IllegalArgumentException("amount must not be greater than balance");
         }
         if (balance.compareTo(BigDecimal.ZERO) < 0) { // DESERVE
             balance = balance.add(amount);
             cashService.decreaseUserCash(userId, amount);
-            
-        }else if (balance.compareTo(BigDecimal.ZERO) > 0) { // OWE
+
+        } else if (balance.compareTo(BigDecimal.ZERO) > 0) { // OWE
             balance = balance.subtract(amount);
             cashService.increaseUserCash(userId, amount);
         }
         toUpdate.setBalance(balance);
-        Customer saved = customerRepository.save(toUpdate);
-        return CustomerMapper.toDTO(saved);
+        return CustomerMapper.toDTO(toUpdate);
     }
 
-  
-
+    @Transactional(readOnly = true)
     public List<String> findAllNames() {
         return customerRepository.findNameBy();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<CustomerDTO> findByName(String name) {
         Optional<Customer> customer = customerRepository.findByName(name);
         return customer.map(CustomerMapper::toDTO);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<CustomerDTO> findById(Long customerId) {
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         return optionalCustomer.map(CustomerMapper::toDTO);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<CustomerDTO> findByPhone(String phoneNum) {
         Optional<Customer> optionalCustomer = customerRepository.findByPhone(phoneNum);
         return optionalCustomer.map(CustomerMapper::toDTO);
     }
 
-    @Transactional
-    public List<CustomerDTO> searchByNameAndBalanceStatus(String name, String balanceStatus){
+    @Transactional(readOnly = true)
+    public List<CustomerDTO> searchByNameAndBalanceStatus(String name, String balanceStatus) {
         List<Customer> customers = customerRepository.searchByNameAndBalanceStatus(name, balanceStatus);
         return customers.stream().map(CustomerMapper::toDTO).toList();
     }

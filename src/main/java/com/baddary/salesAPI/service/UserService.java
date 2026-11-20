@@ -23,20 +23,24 @@ public class UserService {
         this.cashRepository = cashRepository;
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserDTO> findByNameIgnoreCase(String name) {
-        if (name.isBlank())
-            throw new RuntimeException("Name is required");
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Name is required");
         return userRepository.findByNameIgnoreCase(name).map(UserMapper::toDTO);
     }
 
+    @Transactional(readOnly = true)
     public Long count() {
         return userRepository.count();
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public UserDTO addUser(UserDTO dto) {
-        if (dto.getName().isBlank() || dto.getPassword().isBlank())
-            throw new RuntimeException("name or password is empty");
+        if (dto.getName() == null || dto.getName().isBlank() || dto.getPassword() == null || dto.getPassword().isBlank())
+            throw new IllegalArgumentException("Name or password is empty");
+        if(userRepository.findByNameIgnoreCase(dto.getName()).isPresent())
+            throw new IllegalArgumentException("User name is already taken");
         User user = UserMapper.toEntity(dto);
         user.setPassword(BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt()));
         User saved = userRepository.save(user);

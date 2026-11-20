@@ -1,7 +1,6 @@
 package com.baddary.salesAPI.mapper;
 
 import com.baddary.salesAPI.dto.ProductDTO;
-import com.baddary.salesAPI.dto.ProductSummaryDTO;
 import com.baddary.salesAPI.entity.Barcode;
 import com.baddary.salesAPI.entity.Product;
 
@@ -22,8 +21,8 @@ public class ProductMapper {
         return dto;
     }
 
-    public static ProductSummaryDTO toSummaryDTO(Product entity){
-        ProductSummaryDTO dto = new ProductSummaryDTO();
+    public static ProductDTO toSummaryDTO(Product entity){
+        ProductDTO dto = new ProductDTO();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setGreatestUnit(entity.getGreatestUnit());

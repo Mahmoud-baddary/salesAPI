@@ -1,12 +1,13 @@
 package com.baddary.salesAPI.dto;
 
 import com.baddary.salesAPI.enums.OrderType;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -23,6 +24,8 @@ public class OrderDTO {
     @NotNull(message = "paid money is required and must be zero or positive")
     @PositiveOrZero(message = "paid money is required and must be zero or positive")
     private BigDecimal paidMoney;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private BigDecimal totalPrice;
     private BigDecimal discount = BigDecimal.ZERO;
     @NotNull(message = "Customer id is required")
     private Long customerId;
@@ -124,20 +127,18 @@ public class OrderDTO {
         this.userName = userName;
     }
 
-    public BigDecimal calculateTotalPrice() {
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        for (OrderProductDTO item : orderProductDTOSet) {
-            BigDecimal quantity = item.getQuantity();
-            BigDecimal price = item.getPrice();
-            BigDecimal itemDiscount = item.getDiscount();
-            totalPrice = totalPrice.add((quantity.multiply(price).multiply(
-                    BigDecimal.ONE.subtract(itemDiscount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))));
-        }
-        return totalPrice
-                .multiply(BigDecimal.ONE
-                        .subtract(this.discount.divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP)))
-                .setScale(2, RoundingMode.HALF_UP);
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
     }
+
+    public void setTotalPrice(BigDecimal totalPrice) {
+        if (totalPrice == null || totalPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("totalPrice must be greater than zero");
+        }
+        this.totalPrice = totalPrice;
+    }
+
+    
 
     public void setPaidMoney(BigDecimal paidMoney) {
         this.paidMoney = paidMoney;

@@ -5,7 +5,6 @@ import com.baddary.salesAPI.entity.Product;
 import com.baddary.salesAPI.entity.Stock;
 import com.baddary.salesAPI.exception.ResourceNotFoundException;
 import com.baddary.salesAPI.mapper.StockMapper;
-import com.baddary.salesAPI.repository.OrderRepository;
 import com.baddary.salesAPI.repository.ProductRepository;
 import com.baddary.salesAPI.repository.StockRepository;
 import org.springframework.stereotype.Service;
@@ -21,16 +20,18 @@ public class StockService {
     private final StockRepository stockRepository;
     private final ProductRepository productRepository;
 
-    public StockService(StockRepository stockRepository, OrderRepository orderRepository,
+    public StockService(StockRepository stockRepository,
             ProductRepository productRepository) {
         this.stockRepository = stockRepository;
         this.productRepository = productRepository;
     }
 
-    public void increaseStock(Long productId, LocalDate expire, String batch, BigDecimal quantitySU, BigDecimal priceSU) {
+    @Transactional(rollbackFor = Exception.class)
+    public void increaseStock(Long productId, LocalDate expire, String batch, BigDecimal quantitySU,
+            BigDecimal priceSU) {
         Product product = productRepository.findById(productId)
-        .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
-        Stock stock = stockRepository.findByProductIdAndExpire(productId, expire)
+                .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
+        Stock stock = stockRepository.findByProductIdAndExpireAndBatch(productId, expire, batch)
                 .orElseGet(() -> {
                     Stock s = new Stock();
                     s.setProduct(product);
@@ -44,13 +45,13 @@ public class StockService {
         stockRepository.save(stock);
     }
 
-    @Transactional
-    public void decreaseStock(Long productId, LocalDate expire, BigDecimal quantitySU) {
-        Stock stock = stockRepository.findStockForUpdate(productId, expire)
+    @Transactional(rollbackFor = Exception.class)
+    public void decreaseStock(Long productId, LocalDate expire, String batch, BigDecimal quantitySU) {
+        Stock stock = stockRepository.findStockForUpdate(productId, expire, batch)
                 .orElseThrow(() -> new ResourceNotFoundException("Stock not found"));
         // 2. Check if we have enough stock (now guaranteed to be the latest value)
         if (stock.getQuantitySU().compareTo(quantitySU) < 0) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Insufficient stock! Available: " + stock.getQuantitySU() + ", requested: " + quantitySU);
         }
         // 3. Decrease the quantity
@@ -59,22 +60,23 @@ public class StockService {
 
         // 4. Save or delete
         if (newQuantity.compareTo(BigDecimal.ZERO) == 0) {
-            stockRepository.delete(stock); 
+            stockRepository.delete(stock);
         } else {
             stockRepository.save(stock);
         }
     }
 
+    @Transactional(readOnly = true)
     public List<StockDTO> findStocks(Long productId) {
         return stockRepository.findByProductId(productId).stream().map(StockMapper::toDTO).toList();
     }
 
-    @Transactional
-    public Optional<StockDTO> findStock(Long productId, LocalDate expire) {
-        return stockRepository.findByProductIdAndExpire(productId, expire).map(StockMapper::toDTO);
+    @Transactional(readOnly = true)
+    public Optional<StockDTO> findStock(Long productId, LocalDate expire, String batch) {
+        return stockRepository.findByProductIdAndExpireAndBatch(productId, expire, batch).map(StockMapper::toDTO);
     }
 
-    @Transactional 
+    @Transactional(readOnly = true)
     public List<StockDTO> findStocks(String productName) {
         return stockRepository.findByProductName(productName.trim()).stream().map(StockMapper::toDTO).toList();
     }

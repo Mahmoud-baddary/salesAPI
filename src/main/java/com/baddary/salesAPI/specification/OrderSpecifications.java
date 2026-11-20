@@ -25,6 +25,7 @@ public class OrderSpecifications {
             if (productName == null || productName.isBlank()) {
                 return cb.conjunction();
             }
+            query.distinct(true);
             var join = root.join("orderProductSet");
             return cb.like(cb.lower(join.get("product").get("name")),
                     "%" + productName.toLowerCase() + "%");
@@ -36,6 +37,7 @@ public class OrderSpecifications {
             if (barcode == null || barcode.isBlank()) {
                 return cb.conjunction();
             }
+            query.distinct(true);
             Join<Order, OrderProduct> orderProductJoin = root
                     .join("orderProductSet", JoinType.LEFT);
             Join<OrderProduct, Product> productJoin = orderProductJoin
@@ -70,7 +72,7 @@ public class OrderSpecifications {
                 return cb.greaterThanOrEqualTo(root.get("date"), from);
             }
             // to != null
-            return cb.greaterThanOrEqualTo(root.get("date"), to);
+            return cb.lessThanOrEqualTo(root.get("date"), to);
 
         };
 
