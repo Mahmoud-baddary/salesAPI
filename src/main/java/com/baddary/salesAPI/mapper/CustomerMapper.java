@@ -20,6 +20,16 @@ public class CustomerMapper {
         return dto;
     }
 
+    public static CustomerDTO toSummaryDTO(Customer entity) {
+        CustomerDTO dto = new CustomerDTO();
+        dto.setAddress(entity.getAddress());
+        dto.setEmail(entity.getEmail());
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setBalance(entity.getBalance());
+        return dto;
+    }
+
 
     public static Customer toEntity(CustomerDTO dto) {
         Customer entity = new Customer();

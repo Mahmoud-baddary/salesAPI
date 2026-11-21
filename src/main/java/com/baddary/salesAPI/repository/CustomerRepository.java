@@ -2,6 +2,8 @@ package com.baddary.salesAPI.repository;
 
 import com.baddary.salesAPI.entity.Customer;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,16 +16,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("select c from Customer c LEFT JOIN FETCH c.phones where lower(c.name) = lower(:name)")
     Optional<Customer> findByName(@Param("name") String name);
 
-    @Query("select distinct c from Customer c LEFT JOIN FETCH c.phones")
-    List<Customer> findAll();
+    
 
     @Query("""
-                select distinct c
+                select  c
                 from Customer c
-                left join fetch c.phones
                 where lower(c.name) like lower(concat('%', :name, '%'))
             """)
-    List<Customer> searchByName(@Param("name") String name);
+    Page<Customer> searchByName(@Param("name") String name, Pageable pageable);
 
     @Query("select distinct c.name from Customer c")
     List<String> findNameBy();
@@ -42,6 +42,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             "   (:balanceStatus = 'DESERVES' AND c.balance < 0) OR " +
             "   (:balanceStatus = 'SETTLED' AND c.balance = 0)" +
             ")")
-    List<Customer> searchByNameAndBalanceStatus(@Param("name") String name,
-            @Param("balanceStatus") String balanceStatus);
+    Page<Customer> searchByNameAndBalanceStatus(@Param("name") String name,
+            @Param("balanceStatus") String balanceStatus, Pageable pageable);
 }

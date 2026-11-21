@@ -25,10 +25,12 @@ public class StockController {
     }
 
     @GetMapping("/by-product-expire")
-    public ResponseEntity<StockDTO> findStock(@RequestParam long productId, @RequestParam LocalDate expire) {
-        StockDTO stockDTO = stockService.findStock(productId, expire)
+    public ResponseEntity<StockDTO> findStock(@RequestParam long productId, @RequestParam LocalDate expire,
+            @RequestParam String batch) {
+        StockDTO stockDTO = stockService.findStock(productId, expire, batch)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Stock not found for Product ID: " + productId + " and Expire Date: " + expire));
+                        "Stock not found for Product ID: " + productId + " and Expire Date: " + expire + " and Batch: "
+                                + batch));
         return ResponseEntity.ok(stockDTO);
     }
 

@@ -6,6 +6,8 @@ import com.baddary.salesAPI.service.CustomerService;
 import com.baddary.salesAPI.service.UserService;
 
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -25,20 +27,25 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerDTO>> findAll() {
-        return ResponseEntity.ok(customerService.findAll());
+    public ResponseEntity<Page<CustomerDTO>> findAll(@RequestParam (defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(customerService.findAll(page, size));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<CustomerDTO>> searchByName(@RequestParam String name) {
-        return ResponseEntity.ok(customerService.searchByName(name));
+    public ResponseEntity<Page<CustomerDTO>> searchByName(@RequestParam String name,
+                                                           @RequestParam (defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(customerService.searchByName(name, page, size));
     }
 
     @GetMapping("/search-by-balance")
-    public ResponseEntity<List<CustomerDTO>> searchByNameAndBalanceStatus(
+    public ResponseEntity<Page<CustomerDTO>> searchByNameAndBalanceStatus(
             @RequestParam(required = false) String name,
-            @RequestParam String balanceStatus) {
-        return ResponseEntity.ok(customerService.searchByNameAndBalanceStatus(name, balanceStatus));
+            @RequestParam String balanceStatus
+            , @RequestParam (defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(customerService.searchByNameAndBalanceStatus(name, balanceStatus, page, size));
     }
 
     @PostMapping

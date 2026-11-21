@@ -11,6 +11,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +36,17 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public List<CustomerDTO> findAll() {
-        List<Customer> customers = customerRepository.findAll();
-        List<CustomerDTO> dtos = customers.stream().map(CustomerMapper::toDTO).toList();
-        return dtos;
+    public Page<CustomerDTO> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Customer> customers = customerRepository.findAll(pageable);
+        return customers.map(CustomerMapper::toSummaryDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<CustomerDTO> searchByName(String name) {
-        List<Customer> customers = customerRepository.searchByName(name);
-        List<CustomerDTO> dtos = customers.stream().map(CustomerMapper::toDTO).toList();
-        return dtos;
+    public Page<CustomerDTO> searchByName(String name, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Customer> customers = customerRepository.searchByName(name, pageable);
+        return customers.map(CustomerMapper::toSummaryDTO);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -65,11 +69,11 @@ public class CustomerService {
         toUpdate.getPhones().clear();
         entityManager.flush();
         CustomerMapper.updateEntity(toUpdate, dto);
-        Customer saved = customerRepository.save(toUpdate);
-        return CustomerMapper.toDTO(saved);
+        return CustomerMapper.toDTO(toUpdate);
 
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void updateCustomerBalance(Customer customer, OrderDTO orderDTO, BigDecimal totalPrice) {
         BigDecimal netChange = totalPrice.subtract(orderDTO.getPaidMoney());
         // if paid money is greater that totalprice then throw error
@@ -146,8 +150,9 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
-    public List<CustomerDTO> searchByNameAndBalanceStatus(String name, String balanceStatus) {
-        List<Customer> customers = customerRepository.searchByNameAndBalanceStatus(name, balanceStatus);
-        return customers.stream().map(CustomerMapper::toDTO).toList();
+    public Page<CustomerDTO> searchByNameAndBalanceStatus(String name, String balanceStatus, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<Customer> customerPage = customerRepository.searchByNameAndBalanceStatus(name, balanceStatus, pageable);
+        return customerPage.map(CustomerMapper::toSummaryDTO);
     }
 }

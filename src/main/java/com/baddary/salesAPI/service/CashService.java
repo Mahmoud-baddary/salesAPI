@@ -108,7 +108,7 @@ public class CashService {
     // ==========================================
     // 3. USER CASH (No retry needed here usually, but fixed findById)
     // ==========================================
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void increaseUserCash(Long userId, BigDecimal amount) {
         CashRegister register = cashRegisterRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register for user", userId));
@@ -117,7 +117,7 @@ public class CashService {
         cashRegisterRepository.save(register);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void decreaseUserCash(Long userId, BigDecimal amount) {
         CashRegister register = cashRegisterRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cash register for user", userId));

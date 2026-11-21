@@ -104,7 +104,7 @@ public class OrderService {
         } else { // sell increase cash and decrease the stock
             for (OrderProduct op : orderEntity.getOrderProductSet()) {
                 stockService.decreaseStock(op.getProduct().getId(),
-                        op.getExpireDate(), op.getQuantitySU());
+                        op.getExpireDate(), op.getBatch(), op.getQuantitySU());
             }
             // update user cash
             this.cashService.increaseUserCash(orderDTO.getUserId(), orderDTO.getPaidMoney());
